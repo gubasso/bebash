@@ -6,30 +6,67 @@ The contract for the `bebash` management CLI (the secondary surface —
 
 ## Subcommand set
 
-| Command             | Purpose                                                    |
-| ------------------- | ---------------------------------------------------------- |
-| `bebash doctor`     | Health check: payload/overlay paths, versions, missing deps. |
-| `bebash list`       | List available functions with their `desc:` descriptions.  |
-| `bebash path`       | Print resolved paths (payload, overlay, log, manifest).    |
-| `bebash edit <fn>`  | Open a function in `$EDITOR` (`--new <name>` scaffolds one). |
-| `bebash init-user`  | Scaffold the user overlay at `~/.config/bebash/`.          |
-| `bebash version`    | Print the version (from `VERSION`, `git describe` fallback). |
-| `bebash help [cmd]` | Show usage (also `-h`/`--help`).                           |
+- `bebash doctor` — Health check: payload/overlay paths, versions,
+  missing deps.
+- `bebash list` — List available functions with their `desc:`
+  descriptions.
+- `bebash path` — Print resolved paths (payload, overlay, log, manifest).
+- `bebash edit <fn>` — Open a function in `$EDITOR` (`--new <name>`
+  scaffolds one).
+- `bebash init-user` — Scaffold the user overlay at `~/.config/bebash/`.
+- `bebash version` — Print the version — reads the committed/installed
+  `VERSION` (the authoring source of truth), falling back to
+  `git describe --tags` in a dev checkout without one.
+- `bebash help [cmd]` — Show usage (also `-h`/`--help`).
 
 Start with these; add more on demand. Each is one file
 `lib/commands/cmd_<name>.bash` defining `bebash::cmd::<name>`.
 
 ## Per-command behavior
 
-| Command      | stdout (result)                                   | Failure → exit                             |
-| ------------ | ------------------------------------------------- | ------------------------------------------ |
-| `doctor`     | one line per check: `bash`≥4.4, payload & overlay dirs exist, CLI on `PATH`, log writable, each optional tool (`fzf`, `scdoc`, `git-cliff`) present/absent. `--json` emits an array of `{check,status,detail}`. | `1` if any required check fails; `0` if only optional tools are missing (they warn). |
-| `list`       | one row per registered function: `<name>  <desc>` (from the `desc:` marker), sorted; shows shipped vs overlay origin. `--json` emits `[{name,desc,origin}]`. | `0` always (empty list is valid).          |
-| `path`       | resolved paths, one `key=value` per line: `payload`, `overlay`, `log`, `manifest`, `completion`, `man`. `--json` emits an object. | `0`.                                        |
-| `edit <fn>`  | nothing on stdout; opens `$EDITOR` on the file. `--new <name>` scaffolds from `lib/templates/` into the overlay first. | `2` if `<fn>` is missing and `--new` absent; `69` if `$EDITOR` unset. |
-| `init-user`  | prints the overlay path it created/verified.      | `0` (idempotent; never clobbers an existing overlay). |
-| `version`    | the version string only.                          | `0`.                                        |
-| `help [cmd]` | usage text (generated).                            | `0`; `2` if `cmd` is unknown.               |
+### `doctor`
+
+- stdout: one line per check: `bash`≥4.4, payload & overlay dirs exist,
+  CLI on `PATH`, log writable, each optional tool (`fzf`, `scdoc`,
+  `git-cliff`) present/absent. `--json` emits an array of
+  `{check,status,detail}`.
+- Failure → exit: `1` if any required check fails; `0` if only optional
+  tools are missing (they warn).
+
+### `list`
+
+- stdout: one row per registered function: `<name>  <desc>` (from the
+  `desc:` marker), sorted; shows shipped vs overlay origin. `--json`
+  emits `[{name,desc,origin}]`.
+- Failure → exit: `0` always (empty list is valid).
+
+### `path`
+
+- stdout: resolved paths, one `key=value` per line: `payload`, `overlay`,
+  `log`, `manifest`, `completion`, `man`. `--json` emits an object.
+- Failure → exit: `0`.
+
+### `edit <fn>`
+
+- stdout: nothing on stdout; opens `$EDITOR` on the file. `--new <name>`
+  scaffolds from `lib/templates/` into the overlay first.
+- Failure → exit: `2` if `<fn>` is missing and `--new` absent; `69` if
+  `$EDITOR` unset.
+
+### `init-user`
+
+- stdout: prints the overlay path it created/verified.
+- Failure → exit: `0` (idempotent; never clobbers an existing overlay).
+
+### `version`
+
+- stdout: the version string only.
+- Failure → exit: `0`.
+
+### `help [cmd]`
+
+- stdout: usage text (generated).
+- Failure → exit: `0`; `2` if `cmd` is unknown.
 
 Every command routes status/errors to stderr via `__ui_*` and honors the global
 flags below; only the "stdout (result)" column above ever reaches stdout.
@@ -53,15 +90,14 @@ table. `bebash help <cmd>` and `bebash <cmd> --help` are equivalent.
 
 ## Standard flags
 
-| Flag                | Behavior                                                     |
-| ------------------- | ----------------------------------------------------------- |
-| `-h`, `--help`      | Print usage, exit `0`.                                       |
-| `--version`         | Print version, exit `0`.                                     |
-| `-y`, `--yes`       | Auto-confirm prompts (pass through to `__ui_confirm`).      |
-| `--non-interactive` | Never prompt; fail loudly if input is required.             |
-| `--json`            | Structured stdout for machine consumers.                    |
-| `-v` / `-vv` / `--quiet` / `--silent` | Terminal verbosity ([output-channels.md](output-channels.md)). |
-| `--color {auto,always,never}` | Override color detection.                          |
+- `-h`, `--help` — Print usage, exit `0`.
+- `--version` — Print version, exit `0`.
+- `-y`, `--yes` — Auto-confirm prompts (pass through to `__ui_confirm`).
+- `--non-interactive` — Never prompt; fail loudly if input is required.
+- `--json` — Structured stdout for machine consumers.
+- `-v` / `-vv` / `--quiet` / `--silent` — Terminal verbosity
+  ([output-channels.md](output-channels.md)).
+- `--color {auto,always,never}` — Override color detection.
 
 ## Agent-facing surface
 

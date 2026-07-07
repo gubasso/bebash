@@ -4,14 +4,16 @@ The day-to-day release ritual. The full spec (branch model, promotion job wiring
 `cliff.toml`) is in
 [../reference/release-workflow.md](../reference/release-workflow.md); the
 decisions are [ADR-0013](../decisions/ADR-0013-conventional-commits-and-semver.md),
-[ADR-0014](../decisions/ADR-0014-release-please-plus-git-cliff.md), and
-[ADR-0015](../decisions/ADR-0015-develop-integrates-master-mirrors.md).
+[ADR-0015](../decisions/ADR-0015-develop-integrates-master-mirrors.md),
+[ADR-0017](../decisions/ADR-0017-git-cliff-owns-version-bump.md), and
+[ADR-0018](../decisions/ADR-0018-committed-version-is-authoring-sot.md).
 
 ## The short version
 
-You don't cut a release by hand. You write [Conventional
-Commits](https://www.conventionalcommits.org/); a bot proposes the release; you
-merge it.
+You write [Conventional Commits](https://www.conventionalcommits.org/) on
+`develop`. When you're ready, you run `just release` — git-cliff bumps the
+committed `VERSION` and `CHANGELOG.md` and you cut a signed tag — then
+`git push --follow-tags`. CI publishes the Release and promotes `master`.
 
 ## 1. Land work on `develop`
 
@@ -27,38 +29,38 @@ docs: … / chore: … / test: …                        → no release
 
 Open a PR into `develop`. CI must be green to merge.
 
-## 2. Let the Release PR accumulate
+## 2. Cut the release (on `develop`)
 
-On each push to `develop`, **release-please** opens or updates a **Release PR**
-that bumps the version (in `VERSION` + the release-please manifest) and rewrites
-`CHANGELOG.md` from the commits since the last release (via git-cliff). You don't
-edit this PR — you review it.
+When the accumulated changes are worth releasing, on an up-to-date `develop`:
 
-## 3. Merge the Release PR (the human gate)
+```bash
+just release              # git-cliff --bump: writes CHANGELOG.md + VERSION,
+                          # commits chore(release): vX.Y.Z, cuts a SIGNED tag
+git push --follow-tags    # CI publishes the Release and promotes master
+```
 
-When the accumulated changes are worth releasing, merge the Release PR. Merging
-is the gate: nothing publishes without it. On merge, the automation:
+The committed `VERSION` is the authoring source of truth; the signed tag
+is cut to mirror it. There is no Release PR or bot merge gate — the human
+gate is *you*
+choosing to run the ritual and push.
 
-1. tags the release (`vX.Y.Z`);
-2. creates the GitHub Release with the changelog notes;
-3. runs the promotion job, which **fast-forwards `master` to the tag**
-   (`git merge --ff-only`, ancestry-checked). No human pushes to `master`.
-
-## 4. Verify
+## 3. Verify
 
 - `git tag` shows the new `vX.Y.Z`; the GitHub Release exists with notes.
-- `master` now points at the tag (`git log --oneline master -1`).
-- `VERSION` and `CHANGELOG.md` on `develop` reflect the release.
+- `VERSION` on `develop` now reads the new `X.Y.Z` (committed).
+- `CHANGELOG.md` reflects the release.
+- `master` now points at the tag (`git log --oneline master -1`). No human pushed
+  it — CI fast-forwarded it.
 
 ## Fixing a bad release
 
-Versions are immutable — never rewrite a published tag. Land a `fix:` commit on
-`develop` and let the next Release PR ship a new patch. Yank/deprecate only via a
-new release, never by moving a tag.
+Versions are immutable — never rewrite a published tag. Land a `fix:`
+commit on `develop` and cut the next patch with `just release`.
+Yank/deprecate only via a new
+release, never by moving a tag.
 
-## First release / manual fallback
+## First release
 
-The very first tag may need to be created by hand to bootstrap the manifest;
-after that the bot takes over. A fully manual path (bump `VERSION`, run git-cliff,
-`gh release create`) is described as the fallback in
-[../reference/release-workflow.md](../reference/release-workflow.md).
+The first release is cut the same way: `just release` from `develop`.
+`git-cliff --bump` computes `v0.1.0` from the accumulated `feat:`/`fix:` commits
+against the `0.0.0` baseline; there is no manifest or bot to bootstrap.

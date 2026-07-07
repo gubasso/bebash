@@ -1,0 +1,88 @@
+# Release automation for bebash.
+#
+# Model (docs/reference/release-workflow.md, ADR-0013/0015/0017/0018):
+#   The committed VERSION file is the authoring source of truth; the signed v*
+#   tag is the published record, cut to mirror it. The maintainer runs the
+#   git-cliff release ritual on `develop` (bump VERSION + CHANGELOG, commit,
+#   sign a v* tag) and pushes --follow-tags. A human-pushed tag DOES retrigger
+#   workflows, so this file fires on the v* tag and:
+#     -> test   : reuses ci.yml (shellcheck/shfmt + bats matrix)
+#     -> release: `just dist` tarball + sha256, git-cliff release notes,
+#                 gh release create (+ SLSA build-provenance attestation)
+#     -> promote: fast-forwards master onto the tag (ancestry-checked, ff-only)
+#                 so master stays written ONLY by CI (ADR-0015).
+# There is no package registry and no OIDC/Trusted-Publishing to a registry:
+# the tag + GitHub Release is the release. Distribution channels (install.sh,
+# AUR, OBS) key off the signed tag and are added later.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write        # gh release create
+      id-token: write        # SLSA provenance / Sigstore OIDC
+      attestations: write    # GitHub Artifact Attestations
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0        # git-cliff needs full history
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - uses: DeterminateSystems/magic-nix-cache-action@v2
+      - name: Build distribution tarball
+        run: nix develop --command just dist
+      - name: Generate release notes
+        run: nix develop --command git-cliff --latest --strip header -o release_notes.md
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: 'dist/*.tar.gz'
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file release_notes.md \
+            dist/*.tar.gz dist/*.tar.gz.sha256
+
+  # Promote master to the freshly published tag. A human-pushed tag retriggers
+  # workflows, so this runs in the same tag run. master is written only by CI.
+  promote:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Fast-forward master to ${{ github.ref_name }}
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin develop master --tags
+          # Reject a tag not integrated on develop; never promote a stray tag.
+          git merge-base --is-ancestor "refs/tags/${TAG}" origin/develop
+          git checkout master 2>/dev/null || git checkout -b master origin/master
+          git merge --ff-only "refs/tags/${TAG}"
+          git push origin master

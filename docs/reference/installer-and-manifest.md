@@ -6,13 +6,13 @@ The exact behavior of `install.sh` / `uninstall.sh`, the manifest, and the
 
 ## Targets
 
-| Artifact       | Path (user install)                                    |
-| -------------- | ------------------------------------------------------ |
-| Payload        | `$PREFIX/lib/bebash/` (default `~/.local/lib/bebash`)  |
-| CLI symlink    | `$PREFIX/bin/bebash` → payload `bin/bebash`            |
-| Completion     | `$XDG_DATA_HOME/bash-completion/completions/bebash`    |
-| Man page       | `$XDG_DATA_HOME/man/man1/bebash.1`                     |
-| Manifest + state | `$XDG_STATE_HOME/bebash/`                            |
+| Artifact         | Path (user install)                                    |
+| ---------------- | ------------------------------------------------------ |
+| Payload          | `$PREFIX/lib/bebash/` (default `~/.local/lib/bebash`)  |
+| CLI symlink      | `$PREFIX/bin/bebash` -> payload `bin/bebash`           |
+| Completion       | `$XDG_DATA_HOME/bash-completion/completions/bebash`    |
+| Man page         | `$XDG_DATA_HOME/man/man1/bebash.1`                     |
+| Manifest + state | `$XDG_STATE_HOME/bebash/`                              |
 
 Root install (`EUID 0`) uses system paths (`$PREFIX/lib`, `/usr/local/bin`,
 `share/man`); detected via `[[ $EUID -eq 0 ]]`. `PREFIX`/`XDG_*` override both.
@@ -27,7 +27,11 @@ Root install (`EUID 0`) uses system paths (`$PREFIX/lib`, `/usr/local/bin`,
    `app_root/init.bash`, `app_root/VERSION`) so no stale files survive an upgrade.
    The **overlay is never touched.**
 5. **Copy payload** — `bin/`, `lib/`, `init.bash`, `VERSION`, recording each
-   written path into the manifest.
+   written path into the manifest. `VERSION` is a committed repo file — the
+   authoring source of truth — copied into `app_root/VERSION` like any other
+   payload file
+   ([ADR-0018](../decisions/ADR-0018-committed-version-is-authoring-sot.md); the
+   signed `v*` tag mirrors it).
 6. **Symlink the CLI** — `ln -sfn "$app_root/bin/bebash" "$PREFIX/bin/bebash"`;
    record it.
 7. **Install completion + man page** to their XDG locations (man built from
@@ -61,13 +65,13 @@ Example (user install):
 Only paths under this **whitelist** are eligible for deletion during a re-install
 prune or uninstall — a guard against removing anything outside bebash's own trees:
 
-| Root                                              | Holds                    |
-| ------------------------------------------------- | ------------------------ |
-| `$PREFIX/lib/bebash/`                             | the payload              |
-| `$PREFIX/bin/bebash`                              | the CLI symlink          |
-| `$XDG_DATA_HOME/bash-completion/completions/bebash` | completion             |
-| `$XDG_DATA_HOME/man/man1/bebash.1`                | man page                 |
-| `$XDG_STATE_HOME/bebash/`                         | manifest + state         |
+| Root                                                | Holds            |
+| --------------------------------------------------- | ---------------- |
+| `$PREFIX/lib/bebash/`                               | the payload      |
+| `$PREFIX/bin/bebash`                                | the CLI symlink  |
+| `$XDG_DATA_HOME/bash-completion/completions/bebash` | completion       |
+| `$XDG_DATA_HOME/man/man1/bebash.1`                  | man page         |
+| `$XDG_STATE_HOME/bebash/`                           | manifest + state |
 
 A manifest path outside every whitelisted root is refused (not deleted), so a
 mismatched `PREFIX`/`XDG_*` can never orphan or wipe unrelated files.
@@ -78,7 +82,11 @@ Idempotent, backup-first, never a blind append:
 
 ```bash
 begin="# >>> bebash >>>"; end="# <<< bebash <<<"
-block=$'# >>> bebash >>>\n[[ $- == *i* ]] && [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/bebash/init.bash" ]] &&\n  source "${XDG_CONFIG_HOME:-$HOME/.config}/bebash/init.bash"\n# <<< bebash <<<'
+block=$'# >>> bebash >>>\n'
+block+=$'[[ $- == *i* ]] && '
+block+=$'[[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/bebash/init.bash" ]] &&\n'
+block+=$'  source "${XDG_CONFIG_HOME:-$HOME/.config}/bebash/init.bash"\n'
+block+=$'# <<< bebash <<<'
 
 if grep -qF "$begin" "$HOME/.bashrc" 2>/dev/null; then
   tmp=$(mktemp) || exit 1

@@ -19,8 +19,8 @@ language-agnostic and preserves a human merge gate.
 ## Decision Outcome
 
 Chosen option: **release-please + git-cliff**. release-please maintains a Release
-PR (version bump in `VERSION`/manifest + changelog); merging it is the human
-gate and creates the tag + GitHub Release. git-cliff owns the changelog format.
+PR (version bump in its manifest + changelog); merging it is the human gate and
+creates the tag + GitHub Release. git-cliff owns the changelog format.
 
 ## Consequences
 
@@ -29,10 +29,18 @@ gate and creates the tag + GitHub Release. git-cliff owns the changelog format.
   clash.
 - Good: `git-cliff` gives full control of changelog grouping/links via
   `cliff.toml`.
-- Bad: two tools instead of one; release-please's `simple` strategy tracks the
-  version in a manifest file we must keep in sync with `VERSION`.
+- Bad: two tools instead of one.
+- Bad (superseded): release-please's `simple` strategy tracks the version in a
+  manifest file. See
+  [ADR-0018](ADR-0018-committed-version-is-authoring-sot.md): the committed
+  `VERSION` is the authoring source of truth, bumped by git-cliff — no manifest,
+  nothing to keep in sync.
 
 ## Status
 
-Accepted — enacted by `.github/workflows/release-please.yaml` + `cliff.toml`.
-Flow in [reference/release-workflow.md](../reference/release-workflow.md).
+Superseded by [ADR-0017](ADR-0017-git-cliff-owns-version-bump.md). release-please
+was removed: its `simple` type cannot bump a marker-less `VERSION` (its generic
+updater no-ops without an `x-release-please-version` marker), it is GitHub/Node-
+coupled, and it commits a second version copy that must stay in sync — the drift
+surface. git-cliff `--bump` writes the committed `VERSION` deterministically. The
+reasoning is retained here so the choice is not reopened.

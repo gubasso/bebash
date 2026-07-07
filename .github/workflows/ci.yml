@@ -1,0 +1,78 @@
+# CI — lint + test for the bebash Bash framework.
+#
+# Both jobs reuse the project's Nix devShell so CI runs the same toolchain as
+# local development (`nix develop --command just <task>`). This is a Bash
+# project: there is no compiler/build step, so there is no `build` job.
+#
+# The `test` job runs the bats suite across bash 4.4 / 5.0 / 5.2. nixpkgs pins a
+# single bash, so each matrix leg compiles the exact target bash from the GNU
+# source tarball (small, ~1 min) using a nix-provided toolchain, then runs the
+# suite with that bash first on PATH while every other tool (bats, jq, git,
+# shellcheck, shfmt) still comes from the flake devShell. bats' test helpers
+# (bats-support/-assert/-file) are git submodules, hence `submodules: recursive`.
+name: ci
+
+on:
+  push:
+    branches: [develop, master]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - uses: DeterminateSystems/magic-nix-cache-action@v2
+      - name: Lint
+        run: nix develop --command just lint
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        bash: ["4.4", "5.0", "5.2"]
+    name: test (bash ${{ matrix.bash }})
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - uses: DeterminateSystems/magic-nix-cache-action@v2
+      - name: Build bash ${{ matrix.bash }}
+        env:
+          BASH_VERSION_UNDER_TEST: ${{ matrix.bash }}
+        run: |
+          nix shell nixpkgs#gcc nixpkgs#gnumake nixpkgs#curl nixpkgs#gnutar \
+            --command bash -euo pipefail -c '
+              ver="'"$BASH_VERSION_UNDER_TEST"'"
+              curl -fsSL "https://ftp.gnu.org/gnu/bash/bash-${ver}.tar.gz" | tar -xz
+              cd "bash-${ver}"
+              ./configure --prefix="${HOME}/bash-${ver}" >/dev/null
+              make -j"$(nproc)" >/dev/null
+              make install >/dev/null
+            '
+      - name: Test on bash ${{ matrix.bash }}
+        env:
+          BASH_VERSION_UNDER_TEST: ${{ matrix.bash }}
+        run: |
+          nix develop --command bash -euo pipefail -c '
+            export PATH="${HOME}/bash-${BASH_VERSION_UNDER_TEST}/bin:${PATH}"
+            bash --version | head -1
+            just test
+          '

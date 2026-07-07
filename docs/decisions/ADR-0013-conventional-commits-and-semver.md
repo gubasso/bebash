@@ -24,7 +24,7 @@ minor, `feat!:`/`BREAKING CHANGE:` → major. Other types (`docs:`, `chore:`,
 ## Consequences
 
 - Good: version and changelog are derived, not decided; the history is the source
-  of intent; tools (release-please, git-cliff) consume it directly.
+  of intent; git-cliff consumes it directly (`--bump` + changelog).
 - Good: contributors get a clear, checkable commit contract; changelog follows
   [Keep a Changelog](https://keepachangelog.com/).
 - Bad: contributors must learn and follow the commit format; a mislabeled commit
@@ -33,5 +33,5 @@ minor, `feat!:`/`BREAKING CHANGE:` → major. Other types (`docs:`, `chore:`,
 ## Status
 
 Accepted — enacted via commit-message conventions and consumed by
-[ADR-0014](ADR-0014-release-please-plus-git-cliff.md). Details in
+[ADR-0017](ADR-0017-git-cliff-owns-version-bump.md). Details in
 [reference/release-workflow.md](../reference/release-workflow.md).

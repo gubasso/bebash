@@ -55,6 +55,9 @@ source-files:
   - decisions/ADR-0013-conventional-commits-and-semver.md
   - decisions/ADR-0014-release-please-plus-git-cliff.md
   - decisions/ADR-0015-develop-integrates-master-mirrors.md
+  - decisions/ADR-0016-git-tag-is-version-sot.md
+  - decisions/ADR-0017-git-cliff-owns-version-bump.md
+  - decisions/ADR-0018-committed-version-is-authoring-sot.md
 token-estimate: 24000
 ---
 
@@ -84,7 +87,7 @@ directory. These docs are the design + spec that drive the implementation.
   layout, module/loader, `ui`/`log` APIs, output channels, exit codes, config +
   XDG, CLI conventions, installer + manifest, overlay precedence, release
   workflow, privacy tiers, testing, tooling, conventions, inspiration projects.
-- **decisions/** — 15 lean ADRs (`ADR-NNNN-slug.md`, ≤350 words, never deleted).
+- **decisions/** — 18 lean ADRs (`ADR-NNNN-slug.md`, ≤350 words, never deleted).
 
 ## Source map
 

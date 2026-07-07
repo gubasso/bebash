@@ -43,25 +43,27 @@ bebash/
 ├── cliff.toml                  # git-cliff changelog config
 ├── .shellcheckrc · .editorconfig · .pre-commit-config.yaml
 ├── flake.nix · flake.lock      # Nix dev shell (optional)
-├── LICENSE · README.md · VERSION
-└── .github/workflows/          # CI + release-please
+├── LICENSE · README.md
+├── VERSION                     # committed X.Y.Z; authoring source of truth
+└── .github/workflows/          # CI + tag-triggered release (git-cliff)
 ```
 
 ## Directory roles
 
-| Path             | Role                                                                 |
-| ---------------- | ------------------------------------------------------------------- |
-| `bin/`           | Thin CLI shim only — no logic; resolves symlinks, sources, dispatches. |
-| `init.bash`      | Framework entry point; the file `~/.bashrc` sources.                |
-| `lib/`           | Shared machinery sourced by both the framework and the CLI.         |
-| `lib/commands/`  | CLI-only subcommand handlers (`bebash::cmd::*`).                     |
-| `lib/functions/` | Library functions exposed to interactive shells (lazy-loaded).      |
-| `lib/rc.d/`      | Startup modules (options, tool integrations), lexical order, guarded. |
-| `lib/templates/` | Scaffolds emitted by the CLI (`init-user`, `edit --new`).           |
-| `completions/`   | Shell completion for the CLI.                                        |
-| `man/`           | scdoc man-page source, built by `just man`.                         |
-| `test/`          | bats-core suite; `fn_*` = library, `cmd_*` = CLI.                    |
-| `docs/`          | Documentation shelf (this tree).                                    |
+- `bin/` — Thin CLI shim only; no logic; resolves symlinks, sources,
+  dispatches.
+- `init.bash` — Framework entry point; the file `~/.bashrc` sources.
+- `lib/` — Shared machinery sourced by both the framework and the CLI.
+- `lib/commands/` — CLI-only subcommand handlers (`bebash::cmd::*`).
+- `lib/functions/` — Library functions exposed to interactive shells
+  (lazy-loaded).
+- `lib/rc.d/` — Startup modules (options, tool integrations), lexical order,
+  guarded.
+- `lib/templates/` — Scaffolds emitted by the CLI (`init-user`, `edit --new`).
+- `completions/` — Shell completion for the CLI.
+- `man/` — scdoc man-page source, built by `just man`.
+- `test/` — bats-core suite; `fn_*` = library, `cmd_*` = CLI.
+- `docs/` — Documentation shelf (this tree).
 
 ## File extensions
 
@@ -85,6 +87,9 @@ rules for both are in [module-and-loader.md](module-and-loader.md).
 
 The `lib/` tree, `bin/bebash`, `completions/`, `man/`, `init.bash`, and `VERSION`
 are copied into the payload at `$PREFIX/lib/bebash/` (with the CLI symlinked onto
-`PATH`). `docs/`, `test/`, and repo tooling are **not** installed. Exact targets
-and the manifest are in
+`PATH`). `VERSION` is a committed file — the authoring source of truth
+([release-workflow.md](release-workflow.md#version-source-of-truth),
+[ADR-0018](../decisions/ADR-0018-committed-version-is-authoring-sot.md)) — copied
+into the payload like any other file. `docs/`, `test/`, and repo tooling are
+**not** installed. Exact targets and the manifest are in
 [installer-and-manifest.md](installer-and-manifest.md).

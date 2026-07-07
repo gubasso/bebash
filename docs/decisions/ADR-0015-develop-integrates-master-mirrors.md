@@ -17,9 +17,10 @@ humans race the release automation.
 ## Decision Outcome
 
 Chosen option: **`develop` integrates / `master` mirrors**. Feature branches PR
-into `develop`; a green `develop` drives the Release PR. On merge, CI creates the
-tag and **fast-forwards `master` to that tag** (ancestry-checked, `--ff-only`);
-no human pushes to `master`.
+into `develop`; the maintainer cuts the release on `develop` (the git-cliff
+ritual: bump `VERSION` + `CHANGELOG`, commit, sign a `v*` tag). The `v*`-tag CI
+**fast-forwards `master` onto that tag** (ancestry-checked, `--ff-only`); no human
+pushes to `master`.
 
 ## Consequences
 

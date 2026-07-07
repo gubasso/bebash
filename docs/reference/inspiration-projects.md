@@ -18,7 +18,7 @@ its own design; this records provenance and where to look for deeper patterns.
 | **Prezto** | <https://github.com/sorin-ionescu/prezto> | Independent modules the user selects — bebash's `rc.d/` modules are the analog. |
 | **fish** | <https://fishshell.com/docs/current/language.html#autoloading-functions> | Autoloading functions by filename with zero config — the UX bebash reproduces for Bash. |
 | **just** | <https://just.systems/man/en/> | `just install` as the standard task surface; recipes read `PREFIX`/XDG env. |
-| **release-please** | <https://github.com/googleapis/release-please> | The release-PR invariant for a language-agnostic repo ([release-workflow.md](release-workflow.md)). |
+| **release-please** | <https://github.com/googleapis/release-please> | Considered and rejected for bebash — cannot bump a marker-less `VERSION`; GitHub/Node-coupled. See [ADR-0017](../decisions/ADR-0017-git-cliff-owns-version-bump.md). |
 | **git-cliff** | <https://git-cliff.org/> | Conventional-Commits changelog templating via `cliff.toml`. |
 
 ## Why not adopt a framework wholesale

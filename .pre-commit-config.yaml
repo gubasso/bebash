@@ -1,0 +1,92 @@
+# Pre-commit configuration for bebash — a Bash framework + management CLI.
+#
+# Authoritative spec: docs/reference/tooling.md ("## .pre-commit-config.yaml
+# hooks"). The docs Diátaxis shelf is the source of truth; this file implements
+# that hook table verbatim (scopes, tools, flags) and aligns with the shared
+# .editorconfig baseline (2-space sh/bash/bats; markdown keeps hard-break
+# trailing whitespace).
+#
+# Shell scope (shellcheck + shfmt) — the exact file set from the docs table:
+#   bin/bebash, lib/**/*.bash, install*.sh, uninstall.sh, test/*.bash
+#
+# External tool notes:
+#   - shellcheck reads .shellcheckrc (external-sources, source-path, disable=SC1091)
+#     and runs with -x to follow sourced files.
+#   - bats + the bats-support/assert/file submodules must be available for the
+#     local test hooks (see docs/reference/testing.md).
+
+default_install_hook_types: [pre-commit, pre-push]
+
+repos:
+  # --- Generic housekeeping (pre-commit/pre-commit-hooks) ---
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+        files: '\.ya?ml$'
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+        # Markdown keeps two-space hard breaks (.editorconfig: *.md sets
+        # trim_trailing_whitespace = false).
+        args: [--markdown-linebreak-ext=md]
+
+  # --- EditorConfig conformance (aligned with the shared .editorconfig) ---
+  - repo: https://github.com/editorconfig-checker/editorconfig-checker
+    rev: v3.8.0
+    hooks:
+      - id: editorconfig-checker
+        alias: ec
+        # end-of-file-fixer owns final newlines; LICENSE is exempt. Markdown is
+        # excluded: editorconfig-checker can't parse fenced-block interiors and
+        # would fight the *.md trailing-whitespace exemption.
+        args: [-disable-insert-final-newline, -exclude, LICENSE]
+        exclude: '\.md$'
+
+  # --- ShellCheck static analysis (shellcheck-py, -x) ---
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+        args: [-x]   # follow sourced files (source-path from .shellcheckrc)
+        files: '^(bin/bebash|lib/.*\.bash|install[^/]*\.sh|uninstall\.sh|test/[^/]*\.bash)$'
+
+  # --- shfmt formatter (pre-commit-shfmt) ---
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.13.1-1
+    hooks:
+      - id: shfmt
+        # Canonical flags from docs/reference/tooling.md: 2-space indent,
+        # switch-case indent, binary ops at line start, simplify.
+        args: [-i, '2', -ci, -bn, -s]
+        files: '^(bin/bebash|lib/.*\.bash|install[^/]*\.sh|uninstall\.sh|test/[^/]*\.bash)$'
+
+  # --- Markdown lint/format (markdownlint-cli2) ---
+  # Scoped to the docs shelf. MD040 (fenced code blocks must declare a language)
+  # is the highlighted rule; it is enabled by markdownlint's default rule set.
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.23.0
+    hooks:
+      - id: markdownlint-cli2
+        files: '^docs/.*\.md$'
+
+  # --- Tests (local bats) ---
+  # Unit tests gate every commit; integration tests gate pushes. Untagged tests
+  # run in the unit lane; tag a test `# bats test_tags=integration` to defer it
+  # to the pre-push lane. See docs/reference/testing.md.
+  - repo: local
+    hooks:
+      - id: test-unit
+        name: bats unit tests
+        language: system
+        entry: bats --recursive --filter-tags '!integration' test
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+      - id: test-integration
+        name: bats integration tests
+        language: system
+        entry: bats --recursive --filter-tags integration test
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]

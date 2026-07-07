@@ -1,0 +1,20 @@
+# EditorConfig for bebash — a Bash framework + management CLI.
+# Pinned by docs/reference/tooling.md. Shell indent aligns with shfmt (-i 2 -ci -bn -s);
+# markdown is owned by the markdown tooling (markdownlint), so it keeps hard-break whitespace.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{sh,bash,bats}]
+indent_style = space
+indent_size = 2
+
+[justfile]
+indent_style = tab
+
+[*.md]
+trim_trailing_whitespace = false

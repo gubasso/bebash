@@ -11,20 +11,38 @@ load [AGENTS.md](AGENTS.md) first, then read the zone that owns the change.
 
 ## Zones
 
-| Zone            | Reader need   | Start here                                                                                                       |
-| --------------- | ------------- | --------------------------------------------------------------------------------------------------------------- |
-| **explanation** | Understanding | [Architecture](explanation/architecture.md) · [Output model](explanation/output-model.md) · [Overlay model](explanation/overlay-model.md) · [Lazy loading](explanation/lazy-loading-model.md) |
-| **guides**      | Task          | [Installing](guides/installing-bebash.md) · [Writing a function](guides/writing-a-function.md) · [Creating an overlay](guides/creating-a-user-overlay.md) · [Adding a subcommand](guides/adding-a-cli-subcommand.md) · [Cutting a release](guides/cutting-a-release.md) |
-| **reference**   | Lookup        | Specs index below                                                                                               |
-| **decisions**   | Why           | ADR index below                                                                                                 |
+- **explanation** (Understanding):
+  [Architecture](explanation/architecture.md) ·
+  [Output model](explanation/output-model.md) ·
+  [Overlay model](explanation/overlay-model.md) ·
+  [Lazy loading](explanation/lazy-loading-model.md)
+- **guides** (Task):
+  [Installing](guides/installing-bebash.md) ·
+  [Writing a function](guides/writing-a-function.md) ·
+  [Creating an overlay](guides/creating-a-user-overlay.md) ·
+  [Adding a subcommand](guides/adding-a-cli-subcommand.md) ·
+  [Cutting a release](guides/cutting-a-release.md)
+- **reference** (Lookup): Specs index below
+- **decisions** (Why): ADR index below
 
 ## Reference (specs)
 
-- Shape: [project-layout](reference/project-layout.md) · [module-and-loader](reference/module-and-loader.md) · [conventions](reference/conventions.md)
-- Output: [ui-api](reference/ui-api.md) · [log-api](reference/log-api.md) · [output-channels](reference/output-channels.md) · [exit-codes](reference/exit-codes.md)
-- Runtime: [config-and-xdg](reference/config-and-xdg.md) · [cli-conventions](reference/cli-conventions.md) · [overlay-precedence](reference/overlay-precedence.md)
-- Install & release: [installer-and-manifest](reference/installer-and-manifest.md) · [release-workflow](reference/release-workflow.md)
-- Project: [privacy-tiers](reference/privacy-tiers.md) · [testing](reference/testing.md) · [tooling](reference/tooling.md) · [inspiration-projects](reference/inspiration-projects.md)
+- Shape: [project-layout](reference/project-layout.md) ·
+  [module-and-loader](reference/module-and-loader.md) ·
+  [conventions](reference/conventions.md)
+- Output: [ui-api](reference/ui-api.md) ·
+  [log-api](reference/log-api.md) ·
+  [output-channels](reference/output-channels.md) ·
+  [exit-codes](reference/exit-codes.md)
+- Runtime: [config-and-xdg](reference/config-and-xdg.md) ·
+  [cli-conventions](reference/cli-conventions.md) ·
+  [overlay-precedence](reference/overlay-precedence.md)
+- Install & release:
+  [installer-and-manifest](reference/installer-and-manifest.md) ·
+  [release-workflow](reference/release-workflow.md)
+- Project: [privacy-tiers](reference/privacy-tiers.md) ·
+  [testing](reference/testing.md) · [tooling](reference/tooling.md) ·
+  [inspiration-projects](reference/inspiration-projects.md)
 
 ## Decisions
 
@@ -44,5 +62,12 @@ Lean ADRs (never deleted; superseded or rejected instead). Template:
 - [ADR-0011 — Privacy strip: three tiers](decisions/ADR-0011-privacy-strip-three-tiers.md)
 - [ADR-0012 — Parameterize project shortcuts](decisions/ADR-0012-parameterize-project-shortcuts.md)
 - [ADR-0013 — Conventional Commits + SemVer](decisions/ADR-0013-conventional-commits-and-semver.md)
-- [ADR-0014 — release-please + git-cliff](decisions/ADR-0014-release-please-plus-git-cliff.md)
+- [ADR-0014 — release-please +
+  git-cliff](decisions/ADR-0014-release-please-plus-git-cliff.md)
+  *(superseded by ADR-0017)*
 - [ADR-0015 — `develop` integrates, `master` mirrors releases](decisions/ADR-0015-develop-integrates-master-mirrors.md)
+- [ADR-0016 — The git tag is the version source of
+  truth](decisions/ADR-0016-git-tag-is-version-sot.md)
+  *(superseded by ADR-0018)*
+- [ADR-0017 — git-cliff owns the version bump + changelog (release-please rejected)](decisions/ADR-0017-git-cliff-owns-version-bump.md)
+- [ADR-0018 — The committed VERSION is the authoring source of truth; the tag mirrors it](decisions/ADR-0018-committed-version-is-authoring-sot.md)
