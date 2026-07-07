@@ -1,0 +1,86 @@
+# Guide: Creating a user overlay
+
+Layer your own functions, config, and modules on top of the shipped base without
+editing (or losing on upgrade) any shipped file. The precedence rules are
+specified in
+[../reference/overlay-precedence.md](../reference/overlay-precedence.md); the
+concept is in [../explanation/overlay-model.md](../explanation/overlay-model.md).
+
+## 1. Scaffold the overlay
+
+```bash
+bebash init-user
+```
+
+This creates the overlay skeleton at `~/.config/bebash/`
+(`$XDG_CONFIG_HOME/bebash/`):
+
+```text
+~/.config/bebash/
+├── config.bash        # your env, options, project shortcuts (sourced last)
+├── functions/         # your functions (registered after shipped → they win)
+├── lib/               # your libs (available via __bebash_require_lib)
+├── rc.d/              # your startup modules (sourced after shipped rc.d)
+└── disabled.d/        # names of shipped functions to suppress
+```
+
+## 2. Add a personal function
+
+Drop a file named for the function, same format as a shipped one:
+
+```bash
+# ~/.config/bebash/functions/deploy.bash
+# shellcheck shell=bash
+: 'desc: Deploy the current project.'
+
+deploy() { __ui_info "deploying…"; : ; }
+```
+
+New shell → `deploy` is available, lazy-loaded like any shipped function.
+
+## 3. Override a shipped function
+
+Create a file with the **same name** as the shipped one. Because your overlay
+registers last, your version wins — no config needed:
+
+```bash
+# ~/.config/bebash/functions/gpr.bash  → replaces the shipped gpr
+```
+
+## 4. Disable a shipped function
+
+To remove rather than replace, list its name in `disabled.d/`:
+
+```bash
+touch ~/.config/bebash/disabled.d/zup   # unsets the shipped `zup`
+```
+
+## 5. Set config and project shortcuts
+
+Put knobs and personal shortcuts in `config.bash` (Tier-2 functions read config
+instead of hardcoded paths —
+[ADR-0012](../decisions/ADR-0012-parameterize-project-shortcuts.md)):
+
+```bash
+# ~/.config/bebash/config.bash
+BEBASH_PROJECT_ROOTS=("$HOME/Projects" "$HOME/Sources")
+# your own editor shortcuts built on the shipped mechanism:
+docs()  { __project_nvim docs  "$HOME/Documents" "$@"; }
+notes() { __project_nvim notes "$HOME/Notes" "$@"; }
+```
+
+See [../reference/config-and-xdg.md](../reference/config-and-xdg.md) for every
+config key and its default.
+
+## 6. (Author) keep the overlay in your dotfiles
+
+The overlay dir is a normal directory; you can also make it the deploy target of
+a Stow package so your personal setup is tracked in your dotfiles:
+
+```text
+~/.dotfiles/bebash/  --stow-->  ~/.config/bebash/
+```
+
+bebash only ever reads `~/.config/bebash/`; the stow step is yours. This is how
+personal Tier-3 functions stay out of the public base while remaining available
+to you ([overlay model](../explanation/overlay-model.md)).

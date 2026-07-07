@@ -1,0 +1,61 @@
+# The overlay model
+
+Why bebash has two layers, and how your files win over the shipped ones. For the
+exact directory map and load order see
+[../reference/overlay-precedence.md](../reference/overlay-precedence.md).
+
+## Two layers
+
+bebash separates what it ships from what you add:
+
+- **Payload** — the shipped base, installer-owned. Lives at `$PREFIX/lib/bebash/`
+  (default `~/.local/lib/bebash/`). Re-installing **clobbers** it: it is meant to
+  be replaced wholesale on upgrade. You never edit it.
+- **Overlay** — your personal layer, never touched by the installer. Lives at the
+  XDG config dir `~/.config/bebash/`. Holds your `functions/`, `lib/`, `rc.d/`,
+  a `config.bash`, and a `disabled.d/` mask directory.
+
+This separation is [ADR-0005](../decisions/ADR-0005-payload-vs-xdg-user-overlay.md).
+The point: an upgrade can throw away and recopy the whole base without ever
+risking your content, because your content isn't in the base.
+
+## Why user files win
+
+`init.bash` registers the shipped functions first, then registers your overlay
+functions **last**. In Bash, the last definition of a function name is the one
+that stays. So if you drop `~/.config/bebash/functions/gpr.bash`, it replaces the
+shipped `gpr` stub with no configuration and no conflict — the same idea as
+oh-my-bash's `custom/` directory. To *remove* a shipped function instead of
+replacing it, name it in `disabled.d/` and the loader unsets it after
+registration.
+
+You extend the same way you override: a new function file, a new `rc.d/` module,
+or config keys in `config.bash`. There is one mechanism for "mine on top of
+theirs," and it covers add, override, and disable.
+
+## The author's stow indirection
+
+For most users, `~/.config/bebash/` is just a directory they create and fill. For
+the author, it is the *deploy target* of a Stow package kept in their dotfiles:
+
+```text
+~/.dotfiles/bebash/        # tracked in the dotfiles repo (the real source)
+      │  stow bebash
+      ▼
+~/.config/bebash/          # what bebash reads at runtime (symlinks)
+```
+
+So "user config" means `~/.config/bebash/` at runtime, populated from
+`~/.dotfiles/bebash/` at deploy time. Nothing in bebash knows or cares about the
+stow step — it only ever reads the XDG overlay dir. This is how the author keeps
+their Tier-3 personal functions
+([ADR-0011](../decisions/ADR-0011-privacy-strip-three-tiers.md)) out of the public
+base while still using them: they live in the dotfiles overlay, not the shipped
+payload.
+
+## Consequences you can rely on
+
+- Upgrades are safe: your overlay survives every re-install.
+- Overrides are free: same filename, loaded later, wins.
+- The base stays pristine and greppable: no user edits hide inside it.
+- One overlay mechanism serves everyone, author included.
