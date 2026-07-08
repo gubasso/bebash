@@ -101,8 +101,10 @@ Bash has no package registry, so **the tag + GitHub Release is the release.**
 recipe is a straight reproducible tarball (`git archive` pins each entry's `mtime`
 to the commit and emits tree-sorted entries; `gzip -n` drops the gzip timestamp)
 plus a `sha256sum` for attaching to the Release. OIDC/Trusted-Publishing is not
-needed here (no registry token to mint); if a downstream package (AUR, OBS,
-Homebrew) is added later, it consumes the tagged tarball.
+needed here (no registry token to mint).
+
+Downstream packaging channels — AUR, OBS/zypper, Homebrew — are added later and
+**consume the tagged tarball**; they are documented, not auto-generated pipelines.
 
 ## Sources
 
