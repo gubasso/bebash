@@ -1,0 +1,10 @@
+# typos allowlist for bebash. typos runs report-only (no --write-changes); see
+# docs/reference/tooling.md. Add deliberate identifiers / false positives here.
+#
+# Example — teach typos that an identifier is intentional:
+#   [default.extend-identifiers]
+#   bebash = "bebash"
+
+[files]
+# Vendored bats helper libraries are pinned upstream; do not scan them.
+extend-exclude = ["test/test_helper/bats-*"]

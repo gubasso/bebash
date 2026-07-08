@@ -71,3 +71,5 @@ Lean ADRs (never deleted; superseded or rejected instead). Template:
   *(superseded by ADR-0018)*
 - [ADR-0017 — git-cliff owns the version bump + changelog (release-please rejected)](decisions/ADR-0017-git-cliff-owns-version-bump.md)
 - [ADR-0018 — The committed VERSION is the authoring source of truth; the tag mirrors it](decisions/ADR-0018-committed-version-is-authoring-sot.md)
+- [ADR-0019 — Payload init shell wiring and `BEBASH_LIB` root](decisions/ADR-0019-payload-init-shell-wiring-and-bebash-lib-root.md)
+- [ADR-0020 — The repository is self-contained](decisions/ADR-0020-repository-self-containment.md)

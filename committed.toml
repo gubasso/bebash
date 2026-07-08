@@ -1,0 +1,6 @@
+# committed — commit-message linter (commit-msg hook, see .pre-commit-config.yaml).
+# Enforces the Conventional Commits contract (ADR-0013) that the git-cliff
+# release flow (ADR-0017) assumes. Docs: docs/reference/tooling.md.
+style = "conventional"
+no_wip = true
+no_fixup = true

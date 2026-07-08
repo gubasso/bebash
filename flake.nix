@@ -20,6 +20,8 @@
             pkgs.bash
             pkgs.shellcheck
             pkgs.shfmt
+            pkgs.shellharden   # language: system pre-commit hook
+
             # Task runner + per-project git hooks
             pkgs.just
             pkgs.pre-commit

@@ -11,7 +11,7 @@ distilled-from:
   - https://keepachangelog.com/
   - https://github.com/googleapis/release-please
   - https://git-cliff.org/
-last-synced: 2026-07-07
+last-synced: 2026-07-08
 source-files:
   - README.md
   - explanation/architecture.md
@@ -58,6 +58,8 @@ source-files:
   - decisions/ADR-0016-git-tag-is-version-sot.md
   - decisions/ADR-0017-git-cliff-owns-version-bump.md
   - decisions/ADR-0018-committed-version-is-authoring-sot.md
+  - decisions/ADR-0019-payload-init-shell-wiring-and-bebash-lib-root.md
+  - decisions/ADR-0020-repository-self-containment.md
 token-estimate: 24000
 ---
 
@@ -65,7 +67,9 @@ token-estimate: 24000
 
 This digest **maps** the docs shelf; it does not restate it. When this file and
 a zone file disagree, **the zone file wins** — regenerate this digest, never
-promote it to source of truth.
+promote it to source of truth. For agent *working conventions* (self-containment,
+ADR discipline, lint/test, commit and branch rules), the repo-root
+[`AGENTS.md`](../AGENTS.md) is the source of truth; this digest owns docs navigation.
 
 ## Scope
 
@@ -87,7 +91,7 @@ directory. These docs are the design + spec that drive the implementation.
   layout, module/loader, `ui`/`log` APIs, output channels, exit codes, config +
   XDG, CLI conventions, installer + manifest, overlay precedence, release
   workflow, privacy tiers, testing, tooling, conventions, inspiration projects.
-- **decisions/** — 18 lean ADRs (`ADR-NNNN-slug.md`, ≤350 words, never deleted).
+- **decisions/** — 20 lean ADRs (`ADR-NNNN-slug.md`, ≤350 words, never deleted).
 
 ## Source map
 

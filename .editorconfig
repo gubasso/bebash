@@ -13,6 +13,10 @@ trim_trailing_whitespace = true
 indent_style = space
 indent_size = 2
 
+[*.{json,yaml,yml,toml}]
+indent_style = space
+indent_size = 2
+
 [justfile]
 indent_style = tab
 

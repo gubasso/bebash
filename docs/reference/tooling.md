@@ -37,16 +37,38 @@ binary ops at line start, simplify).
 
 ## `.pre-commit-config.yaml` hooks
 
-| Hook                 | Tool                | Scope                              |
-| -------------------- | ------------------- | ---------------------------------- |
-| check-yaml           | pre-commit-hooks    | `*.yaml`, `*.yml`                  |
-| end-of-file-fixer    | pre-commit-hooks    | all                                |
-| trailing-whitespace  | pre-commit-hooks    | all                                |
-| shellcheck           | shellcheck-py (`-x`) | `bin/bebash`, `lib/**/*.bash`, `install*.sh`, `uninstall.sh`, `test/**/*.bash` |
-| shfmt                | pre-commit-shfmt    | same shell files                   |
-| markdown lint/format | markdown tooling    | `docs/**/*.md` (fenced blocks need a language) |
-| test-unit            | local (bats)        | pre-commit stage                   |
-| test-integration     | local (bats)        | pre-push stage                     |
+Hook types installed: `pre-commit`, `commit-msg`, `pre-push`
+(`default_install_hook_types`). The shell file set (referenced as *shell files*
+below) is `bin/bebash`, `lib/**/*.bash`, `install*.sh`, `uninstall.sh`,
+`test/**/*.bash`.
+
+| Hook                 | Tool                 | Scope                              |
+| -------------------- | -------------------- | ---------------------------------- |
+| check-yaml           | pre-commit-hooks     | `*.yaml`, `*.yml`                  |
+| check-toml           | pre-commit-hooks     | `*.toml` (`cliff.toml`, `committed.toml`) |
+| end-of-file-fixer    | pre-commit-hooks     | all                                |
+| trailing-whitespace  | pre-commit-hooks     | all (`--markdown-linebreak-ext=md`) |
+| housekeeping         | pre-commit-hooks     | check-merge-conflict, check-case-conflict, check-added-large-files, detect-private-key, check-executables-have-shebangs, check-shebang-scripts-are-executable |
+| no-commit-to-branch  | pre-commit-hooks     | protects `master` (CI-only, ADR-0015); `develop` stays writable |
+| editorconfig-checker | editorconfig-checker | all except `*.md` (owned by markdown tooling); final newlines owned by end-of-file-fixer; `LICENSE` exempt |
+| shellcheck           | shellcheck-py (`-x`) | shell files                        |
+| shfmt                | pre-commit-shfmt     | shell files                        |
+| shellharden          | local (system)       | shell files (`--replace`, auto-quote) |
+| bashate              | openstack/bashate    | executable scripts only — `bin/bebash`, `install*.sh`, `uninstall.sh` (`-i E003,E006`; sourced libs carry no shebang, so bashate does not run over them) |
+| gitleaks             | gitleaks             | repo secret scan (pre-commit stage) |
+| typos                | crate-ci/typos       | all (report-only; allowlist in `_typos.toml`) |
+| committed            | crate-ci/committed   | commit-msg — Conventional Commits (ADR-0013); config `committed.toml` |
+| markdown lint/format | markdown tooling     | `docs/**/*.md` (fenced blocks need a language) |
+| test-unit            | local (bats)         | pre-commit stage                   |
+| test-integration     | local (bats)         | pre-push stage                     |
+
+Vendored bats helper libraries (`test/test_helper/bats-*`, pinned upstream) are
+excluded from the housekeeping, editorconfig-checker, shellcheck, shellharden,
+and bashate hooks — they carry upstream style and findings bebash does not own.
+`typos` runs report-only: it never rewrites deliberate identifiers (`__ui_*` /
+`__log_*` namespaces, `err.kind` strings); fix real typos by hand and allowlist
+false positives in `_typos.toml`. `committed` is the local enforcement of the
+Conventional Commits contract the release flow (ADR-0013/0017) already assumes.
 
 (No skill/agent-linting hooks — those belong to a different project, not bebash.)
 
@@ -62,6 +84,9 @@ trim_trailing_whitespace = true
 [*.{sh,bash,bats}]
 indent_style = space
 indent_size = 2
+[*.{json,yaml,yml,toml}]
+indent_style = space
+indent_size = 2
 [justfile]
 indent_style = tab
 [*.md]
@@ -70,9 +95,10 @@ trim_trailing_whitespace = false
 
 ## Nix dev shell (optional)
 
-A `flake.nix` pins the toolchain (bash, shellcheck, shfmt, just, pre-commit, bats,
-jq, yq, git, scdoc/mandoc, markdown tooling, git-cliff) so
-`nix develop --command just lint` is reproducible.
+A `flake.nix` pins the toolchain (bash, shellcheck, shfmt, shellharden, just,
+pre-commit, bats, jq, yq, git, scdoc/mandoc, markdown tooling, git-cliff) so
+`nix develop --command just lint` is reproducible. `shellharden` backs the
+`language: system` pre-commit hook, alongside the local bats hooks.
 
 ## Markdown rule
 
