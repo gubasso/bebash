@@ -1,0 +1,85 @@
+# shellcheck shell=bash
+: 'desc: bash completion for the bebash CLI'
+
+__bebash_completion_payload_root() {
+  if [[ -n "${BEBASH_LIB:-}" ]]; then
+    printf '%s\n' "$BEBASH_LIB"
+    return 0
+  fi
+  local cmd
+  cmd=$(command -v bebash 2>/dev/null) || return 1
+  local src=$cmd
+  while [[ -L "$src" ]]; do
+    local dir
+    dir=$(cd -P -- "$(dirname -- "$src")" && pwd) || return 1
+    src=$(readlink -- "$src") || return 1
+    [[ "$src" != /* ]] && src=$dir/$src
+  done
+  local bin_dir
+  bin_dir=$(cd -P -- "$(dirname -- "$src")" && pwd) || return 1
+  cd -P -- "$bin_dir/.." && pwd
+}
+
+__bebash_completion_functions() {
+  local root overlay dir file name
+  root=$(__bebash_completion_payload_root 2>/dev/null || true)
+  overlay=${BEBASH_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/bebash}
+  for dir in "${root:+$root/lib/functions}" "$overlay/functions"; do
+    [[ -n "$dir" && -d "$dir" ]] || continue
+    for file in "$dir"/*.bash; do
+      [[ -e "$file" ]] || continue
+      name=${file##*/}
+      printf '%s\n' "${name%.bash}"
+    done
+  done | LC_ALL=C sort -u
+}
+
+__bebash_completion() {
+  local cur prev sub i word
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD - 1]}
+  local commands='doctor list path edit init-user version help'
+  local global_flags='--json -v -vv -q --quiet --silent --color -y --yes --non-interactive -h --help --version'
+
+  case "$prev" in
+  --color)
+    mapfile -t COMPREPLY < <(compgen -W 'auto always never' -- "$cur")
+    return 0
+    ;;
+  esac
+
+  # Global flags may precede the subcommand (parsed before dispatch), so scan
+  # from index 1, skipping global flags and --color's argument, to find the
+  # first non-flag word: the active subcommand. Stop before the word being
+  # completed so a partial current word is not mistaken for the subcommand.
+  sub=''
+  for ((i = 1; i < COMP_CWORD; i++)); do
+    word=${COMP_WORDS[i]}
+    if [[ "$word" == "--color" ]]; then
+      ((i++)) # skip its argument
+      continue
+    fi
+    [[ "$word" == -* ]] && continue
+    sub=$word
+    break
+  done
+
+  if [[ -z "$sub" ]]; then
+    mapfile -t COMPREPLY < <(compgen -W "$commands $global_flags" -- "$cur")
+    return 0
+  fi
+  case "$sub" in
+  edit | list)
+    mapfile -t COMPREPLY < <(compgen -W "$(__bebash_completion_functions)" -- "$cur")
+    ;;
+  help)
+    mapfile -t COMPREPLY < <(compgen -W "$commands" -- "$cur")
+    ;;
+  *)
+    mapfile -t COMPREPLY < <(compgen -W "$global_flags" -- "$cur")
+    ;;
+  esac
+}
+
+complete -F __bebash_completion bebash

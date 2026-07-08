@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+shopt -s inherit_errexit 2>/dev/null || true
+
+__bebash_bin_source() {
+	local src=${BASH_SOURCE[0]}
+	while [[ -L "$src" ]]; do
+		local dir
+		dir=$(cd -P -- "$(dirname -- "$src")" && pwd)
+		src=$(readlink -- "$src")
+		[[ "$src" != /* ]] && src=$dir/$src
+	done
+	cd -P -- "$(dirname -- "$src")" && pwd
+}
+
+__bebash_bin_dir=$(__bebash_bin_source)
+export __BEBASH_BIN_DIR=$__bebash_bin_dir
+if [[ -z "${BEBASH_LIB:-}" ]]; then
+	BEBASH_LIB=$(cd -P -- "$__bebash_bin_dir/.." && pwd)
+	export BEBASH_LIB
+fi
+
+# shellcheck source=lib/log.bash
+source "$BEBASH_LIB/lib/log.bash"
+# shellcheck source=lib/ui.bash
+source "$BEBASH_LIB/lib/ui.bash"
+# shellcheck source=lib/helpers.bash
+source "$BEBASH_LIB/lib/helpers.bash"
+# shellcheck source=lib/core.bash
+source "$BEBASH_LIB/lib/core.bash"
+
+bebash::main "$@"
