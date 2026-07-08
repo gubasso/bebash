@@ -78,6 +78,44 @@ run_uninstall() {
   assert_file_contains "$HOME/.bashrc.bebash.bak" 'custom line'
 }
 
+@test "install into a symlinked bashrc preserves the link and is idempotent" {
+  # Model a stow/dotfiles setup: ~/.bashrc is a symlink to a tracked file.
+  mkdir -p "$SANDBOX/dotfiles"
+  printf 'custom line\n' >"$SANDBOX/dotfiles/.bashrc"
+  rm -f "$HOME/.bashrc"
+  ln -s "$SANDBOX/dotfiles/.bashrc" "$HOME/.bashrc"
+
+  run_install
+  assert_success
+  run_install
+  assert_success
+
+  # The link must survive; the block must land in the real file, exactly once.
+  assert_symlink_to "$SANDBOX/dotfiles/.bashrc" "$HOME/.bashrc"
+  assert_file_contains "$SANDBOX/dotfiles/.bashrc" 'custom line'
+  assert_file_contains "$SANDBOX/dotfiles/.bashrc" '# >>> bebash >>>'
+  assert_file_contains "$SANDBOX/dotfiles/.bashrc" "$PREFIX/lib/bebash/init.bash"
+  [[ $(grep -c '^# >>> bebash >>>$' "$SANDBOX/dotfiles/.bashrc") -eq 1 ]]
+  [[ $(grep -c '^# <<< bebash <<<$' "$SANDBOX/dotfiles/.bashrc") -eq 1 ]]
+  assert_file_exists "$HOME/.bashrc.bebash.bak"
+}
+
+@test "uninstall through a symlinked bashrc strips the block and keeps the link" {
+  mkdir -p "$SANDBOX/dotfiles"
+  printf 'custom line\n' >"$SANDBOX/dotfiles/.bashrc"
+  rm -f "$HOME/.bashrc"
+  ln -s "$SANDBOX/dotfiles/.bashrc" "$HOME/.bashrc"
+
+  run_install
+  assert_success
+  run_uninstall
+  assert_success
+
+  assert_symlink_to "$SANDBOX/dotfiles/.bashrc" "$HOME/.bashrc"
+  assert_file_not_contains "$SANDBOX/dotfiles/.bashrc" '# >>> bebash >>>'
+  assert_file_contains "$SANDBOX/dotfiles/.bashrc" 'custom line'
+}
+
 @test "reinstall prunes stale manifest file" {
   run_install
   assert_success

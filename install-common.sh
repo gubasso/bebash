@@ -132,13 +132,28 @@ __bebash_install_prune_empty_dirs() {
   done
 }
 
+# Resolve a possibly-symlinked bashrc (e.g. a stow/dotfiles link) to the real
+# file to edit, so writes go through the link instead of replacing it.
+__bebash_install_bashrc_target() {
+  local path=$1 resolved
+  if [[ -L $path ]] && resolved=$(readlink -f -- "$path" 2>/dev/null) \
+    && [[ -n $resolved ]]; then
+    printf '%s' "$resolved"
+  else
+    printf '%s' "$path"
+  fi
+}
+
 __bebash_install_strip_bashrc_block() {
   local bashrc=${1:-$BEBASH_INSTALL_BASHRC}
   [[ -e $bashrc ]] || return 0
-  local tmp
-  tmp=$(mktemp) || return 1
-  sed '/^# >>> bebash >>>$/,/^# <<< bebash <<<$/d' "$bashrc" >"$tmp"
-  mv -- "$tmp" "$bashrc"
+  local target tmp
+  # Edit the real file in place; never mv onto the symlink path (that would
+  # clobber a stow/dotfiles link with a regular file).
+  target=$(__bebash_install_bashrc_target "$bashrc")
+  tmp=$(mktemp "$(dirname -- "$target")/.bebash.XXXXXX") || return 1
+  sed '/^# >>> bebash >>>$/,/^# <<< bebash <<<$/d' "$target" >"$tmp"
+  mv -- "$tmp" "$target"
 }
 
 __bebash_install_escape_for_double_quotes() {
@@ -152,7 +167,7 @@ __bebash_install_escape_for_double_quotes() {
 
 __bebash_install_write_bashrc_block() {
   local init_path=$1 bashrc=${2:-$BEBASH_INSTALL_BASHRC}
-  local escaped block tmp
+  local escaped block target tmp
   escaped=$(__bebash_install_escape_for_double_quotes "$init_path")
   block="# >>> bebash >>>"$'\n'
   block+="[[ \$- == *i* ]] && [[ -r \"$escaped\" ]] &&"$'\n'
@@ -162,12 +177,17 @@ __bebash_install_write_bashrc_block() {
   __bebash_install_mkdir_parent "$bashrc"
   [[ -e $bashrc ]] || : >"$bashrc"
 
-  tmp=$(mktemp) || return 1
-  sed '/^# >>> bebash >>>$/,/^# <<< bebash <<<$/d' "$bashrc" >"$tmp"
+  # Follow a symlink to the real file so the block is added in place; the
+  # range-delete keeps this idempotent (a re-run yields exactly one block).
+  target=$(__bebash_install_bashrc_target "$bashrc")
+  tmp=$(mktemp "$(dirname -- "$target")/.bebash.XXXXXX") || return 1
+  sed '/^# >>> bebash >>>$/,/^# <<< bebash <<<$/d' "$target" >"$tmp"
   printf '\n%s\n' "$block" >>"$tmp"
 
+  # Back up next to the link (e.g. ~/.bashrc.bebash.bak), not inside a
+  # dotfiles repo, capturing the real file's pre-install content.
   if [[ ! -e $bashrc.bebash.bak ]]; then
-    cp -- "$bashrc" "$bashrc.bebash.bak"
+    cp -- "$target" "$bashrc.bebash.bak"
   fi
-  mv -- "$tmp" "$bashrc"
+  mv -- "$tmp" "$target"
 }
