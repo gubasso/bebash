@@ -42,7 +42,7 @@ binary ops at line start, simplify).
 | check-yaml           | pre-commit-hooks    | `*.yaml`, `*.yml`                  |
 | end-of-file-fixer    | pre-commit-hooks    | all                                |
 | trailing-whitespace  | pre-commit-hooks    | all                                |
-| shellcheck           | shellcheck-py (`-x`) | `bin/bebash`, `lib/**/*.bash`, `install*.sh`, `uninstall.sh`, `test/*.bash` |
+| shellcheck           | shellcheck-py (`-x`) | `bin/bebash`, `lib/**/*.bash`, `install*.sh`, `uninstall.sh`, `test/**/*.bash` |
 | shfmt                | pre-commit-shfmt    | same shell files                   |
 | markdown lint/format | markdown tooling    | `docs/**/*.md` (fenced blocks need a language) |
 | test-unit            | local (bats)        | pre-commit stage                   |
@@ -71,8 +71,8 @@ trim_trailing_whitespace = false
 ## Nix dev shell (optional)
 
 A `flake.nix` pins the toolchain (bash, shellcheck, shfmt, just, pre-commit, bats,
-jq, git, scdoc/mandoc, markdown tooling, git-cliff) so `nix develop --command just
-lint` is reproducible.
+jq, yq, git, scdoc/mandoc, markdown tooling, git-cliff) so
+`nix develop --command just lint` is reproducible.
 
 ## Markdown rule
 

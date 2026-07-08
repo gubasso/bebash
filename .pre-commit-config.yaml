@@ -7,7 +7,7 @@
 # trailing whitespace).
 #
 # Shell scope (shellcheck + shfmt) — the exact file set from the docs table:
-#   bin/bebash, lib/**/*.bash, install*.sh, uninstall.sh, test/*.bash
+#   bin/bebash, lib/**/*.bash, install*.sh, uninstall.sh, test/**/*.bash
 #
 # External tool notes:
 #   - shellcheck reads .shellcheckrc (external-sources, source-path, disable=SC1091)
@@ -24,11 +24,17 @@ repos:
     hooks:
       - id: check-yaml
         files: '\.ya?ml$'
+      # Vendored bats helper libraries (test/test_helper/bats-*) are pinned to
+      # upstream releases (see test/test_helper/VENDORED.md) and must not be
+      # rewritten to local style; they are excluded from the housekeeping,
+      # editorconfig, and shellcheck hooks below.
       - id: end-of-file-fixer
+        exclude: '^test/test_helper/bats-'
       - id: trailing-whitespace
         # Markdown keeps two-space hard breaks (.editorconfig: *.md sets
         # trim_trailing_whitespace = false).
         args: [--markdown-linebreak-ext=md]
+        exclude: '^test/test_helper/bats-'
 
   # --- EditorConfig conformance (aligned with the shared .editorconfig) ---
   - repo: https://github.com/editorconfig-checker/editorconfig-checker
@@ -40,7 +46,9 @@ repos:
         # excluded: editorconfig-checker can't parse fenced-block interiors and
         # would fight the *.md trailing-whitespace exemption.
         args: [-disable-insert-final-newline, -exclude, LICENSE]
-        exclude: '\.md$'
+        # Markdown excluded (see above); vendored bats libraries keep upstream
+        # tab indentation and are exempt from the local space baseline.
+        exclude: '(\.md$|^test/test_helper/bats-)'
 
   # --- ShellCheck static analysis (shellcheck-py, -x) ---
   - repo: https://github.com/shellcheck-py/shellcheck-py
@@ -48,7 +56,9 @@ repos:
     hooks:
       - id: shellcheck
         args: [-x]   # follow sourced files (source-path from .shellcheckrc)
-        files: '^(bin/bebash|lib/.*\.bash|install[^/]*\.sh|uninstall\.sh|test/[^/]*\.bash)$'
+        files: '^(bin/bebash|lib/.*\.bash|install[^/]*\.sh|uninstall\.sh|test/.*\.bash)$'
+        # Vendored bats libraries carry upstream shellcheck findings we do not own.
+        exclude: '^test/test_helper/bats-'
 
   # --- shfmt formatter (pre-commit-shfmt) ---
   - repo: https://github.com/scop/pre-commit-shfmt
@@ -58,7 +68,7 @@ repos:
         # Canonical flags from docs/reference/tooling.md: 2-space indent,
         # switch-case indent, binary ops at line start, simplify.
         args: [-i, '2', -ci, -bn, -s]
-        files: '^(bin/bebash|lib/.*\.bash|install[^/]*\.sh|uninstall\.sh|test/[^/]*\.bash)$'
+        files: '^(bin/bebash|lib/.*\.bash|install[^/]*\.sh|uninstall\.sh|test/.*\.bash)$'
 
   # --- Markdown lint/format (markdownlint-cli2) ---
   # Scoped to the docs shelf. MD040 (fenced code blocks must declare a language)

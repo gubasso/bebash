@@ -17,9 +17,12 @@ ship only sane, generic tooling and keep anything personal out of the base.
 
 Chosen option: **three tiers**. Tier 1 ships as-is (generic git/util tooling).
 Tier 2 ships but is parameterized (generic behavior that hardcodes the author's
-paths — e.g. `p`, `pup`, the `__project_nvim` family). Tier 3 never ships
+paths — e.g. `p`, the `__project_nvim` family). Tier 3 never ships
 (`suse-*`, `*-session-login`, personal project dirs, host overlays) and moves to
 the author's own `~/.dotfiles/bebash/` overlay.
+
+The generic updater framework ships as `lib/updater.bash`; concrete OS updater
+commands `pup` and `zup` are Tier 3 overlay commands.
 
 ## Consequences
 

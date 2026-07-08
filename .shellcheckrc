@@ -1,0 +1,5 @@
+external-sources=true
+source-path=SCRIPTDIR
+source-path=SCRIPTDIR/lib
+shell=bash
+disable=SC1091

@@ -26,6 +26,7 @@
             # Test harness + data plumbing
             pkgs.bats
             pkgs.jq
+            pkgs.yq-go
             pkgs.git
             # Man-page / docs generation
             pkgs.scdoc

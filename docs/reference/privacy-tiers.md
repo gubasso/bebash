@@ -24,7 +24,6 @@ credentials.
 | Function        | Hardcoded today            | Parameterization                            |
 | --------------- | -------------------------- | ------------------------------------------- |
 | `p`             | `~/Sources`, `~/Projects`  | reads `BEBASH_PROJECT_ROOTS` (defaults provided) |
-| `pup`           | a personal `dwm` clone path | optional `BEBASH_DWM_PATH` (default: off)  |
 | `docs`/`notes`/`todo`/`dot` | fixed dirs via `__project_nvim` | ship `__project_nvim`; declare shortcuts in `config.bash` |
 
 The `__project_nvim` helper is the reusable mechanism; the concrete targets are
@@ -40,6 +39,8 @@ user config, so only the pattern ships publicly.
 | `suse-mount-gdrive`            | personal Google Drive rclone remote            |
 | `claude-session-login`         | personal tool + browser profile                |
 | `codex-session-login`          | personal tool + browser profile                |
+| `pup`                          | Arch OS updater; overlay command using `lib/updater.bash` |
+| `zup`                          | openSUSE OS updater; overlay command using `lib/updater.bash` |
 | `hosts/*.bash`                 | per-machine personal overlays                  |
 
 These move to the author's `~/.dotfiles/bebash/` overlay, deployed the same way
