@@ -2,7 +2,8 @@
 
 The exact behavior of `install.sh` / `uninstall.sh`, the manifest, and the
 `.bashrc` wiring. Decisions: [ADR-0004](../decisions/ADR-0004-install-with-just-and-install-sh.md),
-[ADR-0006](../decisions/ADR-0006-idempotent-bashrc-marker-block.md).
+[ADR-0006](../decisions/ADR-0006-idempotent-bashrc-marker-block.md),
+[ADR-0019](../decisions/ADR-0019-payload-init-shell-wiring-and-bebash-lib-root.md).
 
 ## Targets
 
@@ -84,8 +85,8 @@ Idempotent, backup-first, never a blind append:
 begin="# >>> bebash >>>"; end="# <<< bebash <<<"
 block=$'# >>> bebash >>>\n'
 block+=$'[[ $- == *i* ]] && '
-block+=$'[[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/bebash/init.bash" ]] &&\n'
-block+=$'  source "${XDG_CONFIG_HOME:-$HOME/.config}/bebash/init.bash"\n'
+block+=$'[[ -r "/home/me/.local/lib/bebash/init.bash" ]] &&\n'
+block+=$'  source "/home/me/.local/lib/bebash/init.bash"\n'
 block+=$'# <<< bebash <<<'
 
 if grep -qF "$begin" "$HOME/.bashrc" 2>/dev/null; then
@@ -100,7 +101,11 @@ fi
 ```
 
 The sourced line is interactive-guarded (`[[ $- == *i* ]]`) so non-interactive
-shells skip it.
+shells skip it. The example path is illustrative: the installer writes the
+actual resolved `$app_root/init.bash` path at install time, not a literal
+`$PREFIX` expression, because `PREFIX` and `XDG_*` are not reliable in a fresh
+login shell. The payload `init.bash` then discovers the overlay at
+`${XDG_CONFIG_HOME:-$HOME/.config}/bebash/config.bash`.
 
 ## `uninstall.sh`
 

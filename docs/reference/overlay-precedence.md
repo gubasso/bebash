@@ -23,7 +23,7 @@ bebash only reads `~/.config/bebash/` ([overlay model](../explanation/overlay-mo
 ```text
 1. resolve BEBASH_LIB (payload) and BEBASH_CONFIG_DIR (overlay)
 2. EAGER core:   source log → ui → helpers → autoload registry
-3. register SHIPPED functions        (stubs)         ← from BEBASH_LIB/functions
+3. register SHIPPED functions        (stubs)         ← from $BEBASH_LIB/lib/functions
 4. register SHIPPED libs/modules      (records)
 5. source SHIPPED rc.d/*.bash         (lexical order)
 6. register USER functions            (stubs, replace shipped of same name) ← overlay

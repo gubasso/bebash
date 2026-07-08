@@ -5,8 +5,8 @@ functions, `rc.d` startup modules, and a split human/machine output layer — th
 **also** ships a small `bebash` management CLI. Clone it, run `just install`, and
 layer your own functions and config on top without forking.
 
-> Status: design phase. The [`docs/`](docs/) shelf is the specification that
-> drives the implementation; the runtime code is not built yet.
+> Status: implementation in progress. The [`docs/`](docs/) shelf is the
+> specification that drives the runtime, CLI, installer, and tests.
 
 ## Why
 
@@ -17,7 +17,7 @@ layer your own functions and config on top without forking.
 - **Yours on top of ours.** A shipped, immutable base plus an XDG user overlay
   (`~/.config/bebash/`) where your functions and config **win** over the defaults.
 
-## Install (planned)
+## Install
 
 ```bash
 git clone https://github.com/gubasso/bebash
@@ -25,17 +25,20 @@ cd bebash
 just install
 ```
 
-The installer adds one guarded line to your `~/.bashrc` (inside an idempotent
-marker block, never a blind append):
+The installer copies the payload to `$PREFIX/lib/bebash/`, symlinks the CLI into
+`$PREFIX/bin`, installs completion and the man page under XDG data paths, records
+a manifest, and leaves your overlay intact. It also adds one guarded line to
+your `~/.bashrc` (inside an idempotent marker block, never a blind append):
 
 ```bash
 # >>> bebash >>>
-[[ $- == *i* ]] && [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/bebash/init.bash" ]] &&
-  source "${XDG_CONFIG_HOME:-$HOME/.config}/bebash/init.bash"
+[[ $- == *i* ]] && [[ -r "/home/me/.local/lib/bebash/init.bash" ]] &&
+  source "/home/me/.local/lib/bebash/init.bash"
 # <<< bebash <<<
 ```
 
-Open a new shell and your functions are available.
+The installer writes the actual resolved payload path for your machine, not the
+sample `/home/me/...` path. Open a new shell and your functions are available.
 
 ## Documentation
 

@@ -105,7 +105,7 @@ that command runs.
 ```bash
 bebash::loader::dispatch() {
   local sub="$1"; shift
-  local path="${BEBASH_LIB}/commands/cmd_${sub}.bash"
+  local path="${BEBASH_LIB}/lib/commands/cmd_${sub}.bash"
   [[ -r "$path" ]] || bebash::die 2 "unknown command: ${sub}"
   # shellcheck source=/dev/null
   source "$path"

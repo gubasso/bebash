@@ -34,18 +34,20 @@ system install).
 ## Shell wiring
 
 The installer adds a single guarded line inside an idempotent marker block —
-never a blind append ([ADR-0006](../decisions/ADR-0006-idempotent-bashrc-marker-block.md)):
+never a blind append ([ADR-0006](../decisions/ADR-0006-idempotent-bashrc-marker-block.md),
+[ADR-0019](../decisions/ADR-0019-payload-init-shell-wiring-and-bebash-lib-root.md)):
 
 ```bash
 # >>> bebash >>>
-[[ $- == *i* ]] && [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/bebash/init.bash" ]] &&
-  source "${XDG_CONFIG_HOME:-$HOME/.config}/bebash/init.bash"
+[[ $- == *i* ]] && [[ -r "/home/me/.local/lib/bebash/init.bash" ]] &&
+  source "/home/me/.local/lib/bebash/init.bash"
 # <<< bebash <<<
 ```
 
-Re-running the installer never duplicates this block. If the block is already
-present it is replaced in place; if absent, `~/.bashrc` is backed up once before
-the block is appended.
+The installer writes the actual resolved payload `init.bash` path for your
+install, not the sample `/home/me/...` path. Re-running the installer never
+duplicates this block. If the block is already present it is replaced in place;
+if absent, `~/.bashrc` is backed up once before the block is appended.
 
 ## Activate
 
