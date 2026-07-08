@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-: 'desc: Edit an overlay function.'
+: 'desc: Edit a user data function.'
 
 __bebash_cmd_edit_usage() {
   printf 'usage: bebash edit [--new] <function>\n'
@@ -10,11 +10,11 @@ __bebash_valid_function_name() {
 }
 
 __bebash_find_function_file() {
-  local name=$1 overlay shipped
-  overlay="$(__bebash_overlay_dir)/functions/$name.bash"
-  shipped="${BEBASH_LIB}/lib/functions/$name.bash"
-  if [[ -e "$overlay" ]]; then
-    printf '%s\n' "$overlay"
+  local name=$1 user shipped
+  user="$(__bebash_user_data_dir)/functions/$name.bash"
+  shipped="${BEBASH_LIB}/functions/$name.bash"
+  if [[ -e "$user" ]]; then
+    printf '%s\n' "$user"
   elif [[ -e "$shipped" ]]; then
     printf '%s\n' "$shipped"
   else
@@ -24,7 +24,7 @@ __bebash_find_function_file() {
 
 __bebash_scaffold_function() {
   local name=$1 target=$2 template tmp
-  template="${BEBASH_LIB}/lib/templates/function.bash"
+  template="${BEBASH_LIB}/templates/function.bash"
   mkdir -p -- "${target%/*}" || return 73
   [[ -e "$target" ]] && return 0
   tmp="$target.tmp.$$"
@@ -108,7 +108,7 @@ bebash::cmd::edit() {
   }
 
   if ((create)); then
-    file="$(__bebash_overlay_dir)/functions/$name.bash"
+    file="$(__bebash_user_data_dir)/functions/$name.bash"
     __bebash_scaffold_function "$name" "$file"
     rc=$?
     ((rc == 0)) || {

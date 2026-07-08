@@ -19,11 +19,11 @@ At startup, most files are **registered**, not run:
 - A **function** file becomes a tiny stub. The stub, on first call, sources the
   real file (replacing itself) and re-invokes with the original arguments. From
   the caller's view it just works; the cost is one source, once, only if called.
-- A **lib** or **module** file becomes a registry *record*. It isn't sourced at
+- A **lib** file becomes a registry *record*. It isn't sourced at
   startup at all. A command that needs it calls `__bebash_require_lib <name>`,
   which sources it once (guarded) and no-ops thereafter.
 
-This is a registry **keyed by kind** (`function` / `lib` / `module`) rather than a
+This is a registry **keyed by kind** (`function` / `lib`) rather than a
 function-only autoloader — the generalization decided in
 [ADR-0007](../decisions/ADR-0007-lazy-autoload-registry-of-kinds.md). Startup cost
 becomes "index the files," which is O(1) in the number of definitions, not "source

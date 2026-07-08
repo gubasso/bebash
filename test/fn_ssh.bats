@@ -1,7 +1,7 @@
 setup() {
   load 'test_helper/common-setup'
   _common_setup
-  source lib/functions/ssh.bash
+  source functions/ssh.bash
   bindir="$(mktemp -d)"
   export PATH="$bindir:$PATH"
 }

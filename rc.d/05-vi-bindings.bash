@@ -16,10 +16,10 @@ __readline_edit_buffer_no_exec() {
 
   if [[ -n "${VISUAL:-}" ]]; then
     # shellcheck disable=SC2206
-    editor_cmd=(${VISUAL})
+    editor_cmd=("$VISUAL")
   elif [[ -n "${EDITOR:-}" ]]; then
     # shellcheck disable=SC2206
-    editor_cmd=(${EDITOR})
+    editor_cmd=("$EDITOR")
   else
     editor_cmd=(vi)
   fi

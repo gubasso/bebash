@@ -14,6 +14,8 @@ __bebash_source_dir() {
 
 BEBASH_LIB=${BEBASH_LIB:-$(__bebash_source_dir)}
 BEBASH_CONFIG_DIR=${BEBASH_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/bebash}
+BEBASH_DATA_DIR=${BEBASH_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/bebash}
+export BEBASH_LIB BEBASH_CONFIG_DIR BEBASH_DATA_DIR
 
 # shellcheck source=lib/log.bash
 source "$BEBASH_LIB/lib/log.bash"
@@ -24,24 +26,22 @@ source "$BEBASH_LIB/lib/helpers.bash"
 # shellcheck source=lib/autoload.bash
 source "$BEBASH_LIB/lib/autoload.bash"
 
-__autoload_scan_dir function "$BEBASH_LIB/lib/functions"
+__autoload_scan_dir function "$BEBASH_LIB/functions"
 __autoload_scan_dir lib "$BEBASH_LIB/lib"
-__autoload_scan_dir module "$BEBASH_LIB/lib/modules"
 
-if [[ -d "$BEBASH_LIB/lib/rc.d" ]]; then
-  for __bebash_rc in "$BEBASH_LIB/lib/rc.d"/*.bash; do
+if [[ -d "$BEBASH_LIB/rc.d" ]]; then
+  for __bebash_rc in "$BEBASH_LIB/rc.d"/*.bash; do
     [[ -e "$__bebash_rc" ]] || continue
     # shellcheck source=/dev/null
     source "$__bebash_rc"
   done
 fi
 
-__autoload_scan_dir function "$BEBASH_CONFIG_DIR/functions"
-__autoload_scan_dir lib "$BEBASH_CONFIG_DIR/lib"
-__autoload_scan_dir module "$BEBASH_CONFIG_DIR/modules"
+__autoload_scan_dir function "$BEBASH_DATA_DIR/functions"
+__autoload_scan_dir lib "$BEBASH_DATA_DIR/lib"
 
-if [[ -d "$BEBASH_CONFIG_DIR/rc.d" ]]; then
-  for __bebash_rc in "$BEBASH_CONFIG_DIR/rc.d"/*.bash; do
+if [[ -d "$BEBASH_DATA_DIR/rc.d" ]]; then
+  for __bebash_rc in "$BEBASH_DATA_DIR/rc.d"/*.bash; do
     [[ -e "$__bebash_rc" ]] || continue
     # shellcheck source=/dev/null
     source "$__bebash_rc"

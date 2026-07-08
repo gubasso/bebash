@@ -22,6 +22,9 @@ global `IFS=$'\n\t'`.
 external-sources=true
 source-path=SCRIPTDIR
 source-path=SCRIPTDIR/lib
+source-path=SCRIPTDIR/libexec
+source-path=SCRIPTDIR/functions
+source-path=SCRIPTDIR/rc.d
 shell=bash
 disable=SC1091
 ```
@@ -39,7 +42,8 @@ binary ops at line start, simplify).
 
 Hook types installed: `pre-commit`, `commit-msg`, `pre-push`
 (`default_install_hook_types`). The shell file set (referenced as *shell files*
-below) is `bin/bebash`, `lib/**/*.bash`, `install*.sh`, `uninstall.sh`,
+below) is `bin/*`, `lib/**/*.bash`, `libexec/**/*.bash`,
+`functions/**/*.bash`, `rc.d/**/*.bash`, `install*.sh`, `uninstall.sh`, and
 `test/**/*.bash`.
 
 | Hook                 | Tool                 | Scope                              |

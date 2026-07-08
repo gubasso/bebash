@@ -15,7 +15,7 @@ a project other people can install without adopting the whole dotfiles repo.
 
 ## Decision Outcome
 
-Chosen option: **standalone installable project** — a clonable repo with its own
+Chosen option: **standalone installable project** — a cloneable repo with its own
 installer, versioning, and docs, decoupled from any one machine's dotfiles.
 
 ## Consequences

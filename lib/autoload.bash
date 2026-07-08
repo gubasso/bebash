@@ -15,7 +15,7 @@ __autoload_register() {
     eval "$(printf '%s() { unset -f %s; source %q || return; %s "$@"; }' \
       "$name" "$name" "$path" "$name")"
     ;;
-  lib | module) ;;
+  lib) ;;
   *)
     __ui_err "autoload: unknown kind: $kind"
     return 2

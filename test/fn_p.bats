@@ -3,7 +3,7 @@ setup() {
   _common_setup
   source lib/ui.bash
   source lib/helpers.bash
-  source lib/functions/p.bash
+  source functions/p.bash
   bindir="$(mktemp -d)"
   export PATH="$bindir:$PATH"
 }
@@ -28,7 +28,7 @@ EOS
 cat
 EOS
   chmod +x "$bindir/fd" "$bindir/fzf"
-  run bash -c 'source lib/ui.bash; source lib/helpers.bash; source lib/functions/p.bash; p; pwd'
+  run bash -c 'source lib/ui.bash; source lib/helpers.bash; source functions/p.bash; p; pwd'
   assert_success
   assert_output --partial "$HOME/Projects/repo"
 }

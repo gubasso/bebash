@@ -7,7 +7,7 @@ __bebash_loader_loaded=1
 bebash::loader::dispatch() {
   local sub=${1-}
   shift || true
-  local path="${BEBASH_LIB}/lib/commands/cmd_${sub}.bash"
+  local path="${BEBASH_LIB}/libexec/commands/cmd_${sub}.bash"
   [[ -r "$path" ]] || {
     bebash::die 2 "unknown command: $sub"
     return $?

@@ -30,8 +30,8 @@ __log() {
 
   local threshold=${BEBASH_LOG_LEVEL:-warn}
   local lvl_num=${__LOG_LEVELS[$level]:-20}
-  local thr_num=${__LOG_LEVELS[$threshold]:-30}
-  ((lvl_num < thr_num)) && return "$saved_status"
+  local threshold_num=${__LOG_LEVELS[$threshold]:-30}
+  ((lvl_num < threshold_num)) && return "$saved_status"
 
   local ts
   ts=$(date -u '+%Y-%m-%dT%H:%M:%S.%3NZ' 2>/dev/null || date -u '+%Y-%m-%dT%H:%M:%SZ')

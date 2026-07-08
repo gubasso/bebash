@@ -4,7 +4,7 @@ setup() {
   source lib/log.bash
   source lib/ui.bash
   source lib/helpers.bash
-  source lib/functions/git-branch-gone.bash
+  source functions/git-branch-gone.bash
   bindir="$(mktemp -d)"
   export PATH="$bindir:$PATH"
 }

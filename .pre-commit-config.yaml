@@ -7,7 +7,8 @@
 # trailing whitespace).
 #
 # Shell scope (shellcheck + shfmt) — the exact file set from the docs table:
-#   bin/bebash, lib/**/*.bash, install*.sh, uninstall.sh, test/**/*.bash
+#   bin/*, lib/**/*.bash, libexec/**/*.bash, functions/**/*.bash, rc.d/**/*.bash,
+#   install*.sh, uninstall.sh, test/**/*.bash
 #
 # External tool notes:
 #   - shellcheck reads .shellcheckrc (external-sources, source-path, disable=SC1091)
@@ -73,7 +74,7 @@ repos:
     hooks:
       - id: shellcheck
         args: [-x]   # follow sourced files (source-path from .shellcheckrc)
-        files: '^(bin/bebash|lib/.*\.bash|install[^/]*\.sh|uninstall\.sh|test/.*\.bash)$'
+        files: '^(bin/[^/]+|lib/.*\.bash|libexec/.*\.bash|functions/.*\.bash|rc\.d/.*\.bash|install[^/]*\.sh|uninstall\.sh|test/.*\.bash)$'
         # Vendored bats libraries carry upstream shellcheck findings we do not own.
         exclude: '^test/test_helper/bats-'
 
@@ -85,7 +86,7 @@ repos:
         # Canonical flags from docs/reference/tooling.md: 2-space indent,
         # switch-case indent, binary ops at line start, simplify.
         args: [-i, '2', -ci, -bn, -s]
-        files: '^(bin/bebash|lib/.*\.bash|install[^/]*\.sh|uninstall\.sh|test/.*\.bash)$'
+        files: '^(bin/[^/]+|lib/.*\.bash|libexec/.*\.bash|functions/.*\.bash|rc\.d/.*\.bash|install[^/]*\.sh|uninstall\.sh|test/.*\.bash)$'
 
   # --- shellharden: auto-quote variables and command substitutions ---
   # language: system — shellharden is provided by the Nix devShell (flake.nix),
@@ -96,7 +97,7 @@ repos:
         name: shellharden
         language: system
         entry: shellharden --replace
-        files: '^(bin/bebash|lib/.*\.bash|install[^/]*\.sh|uninstall\.sh|test/.*\.bash)$'
+        files: '^(bin/[^/]+|lib/.*\.bash|libexec/.*\.bash|functions/.*\.bash|rc\.d/.*\.bash|install[^/]*\.sh|uninstall\.sh|test/.*\.bash)$'
         exclude: '^test/test_helper/bats-'
 
   # --- bashate: shell style checker ---

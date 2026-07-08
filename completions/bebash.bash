@@ -21,10 +21,10 @@ __bebash_completion_payload_root() {
 }
 
 __bebash_completion_functions() {
-  local root overlay dir file name
+  local root data dir file name
   root=$(__bebash_completion_payload_root 2>/dev/null || true)
-  overlay=${BEBASH_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/bebash}
-  for dir in "${root:+$root/lib/functions}" "$overlay/functions"; do
+  data=${BEBASH_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/bebash}
+  for dir in "${root:+$root/functions}" "$data/functions"; do
     [[ -n "$dir" && -d "$dir" ]] || continue
     for file in "$dir"/*.bash; do
       [[ -e "$file" ]] || continue

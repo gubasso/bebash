@@ -33,4 +33,5 @@ touched by the installer) and is layered on top by `init.bash`.
 
 ## Status
 
-Accepted — enacted by the install targets and `init.bash` load order.
+Superseded by
+[ADR-0022](ADR-0022-overlay-config-vs-data-split.md). Keep for decision history.

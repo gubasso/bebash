@@ -3,15 +3,17 @@ setup() {
   cmd_setup
 }
 
-@test "init-user scaffolds documented overlay dirs" {
+@test "init-user scaffolds documented config and data dirs" {
   run_bebash init-user
   [ "$status" -eq 0 ]
-  [ "$output" = "$XDG_CONFIG_HOME/bebash" ]
-  [ -d "$XDG_CONFIG_HOME/bebash/functions" ]
-  [ -d "$XDG_CONFIG_HOME/bebash/lib" ]
-  [ -d "$XDG_CONFIG_HOME/bebash/rc.d" ]
+  [ "${lines[0]}" = "config=$XDG_CONFIG_HOME/bebash" ]
+  [ "${lines[1]}" = "data=$XDG_DATA_HOME/bebash" ]
   [ -d "$XDG_CONFIG_HOME/bebash/disabled.d" ]
   [ -f "$XDG_CONFIG_HOME/bebash/config.bash" ]
+  [ -d "$XDG_DATA_HOME/bebash/functions" ]
+  [ -d "$XDG_DATA_HOME/bebash/lib" ]
+  [ -d "$XDG_DATA_HOME/bebash/rc.d" ]
+  [ -d "$XDG_DATA_HOME/bebash/commands" ]
 }
 
 @test "init-user is idempotent and preserves config" {

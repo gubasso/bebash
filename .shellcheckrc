@@ -1,5 +1,8 @@
 external-sources=true
 source-path=SCRIPTDIR
 source-path=SCRIPTDIR/lib
+source-path=SCRIPTDIR/libexec
+source-path=SCRIPTDIR/functions
+source-path=SCRIPTDIR/rc.d
 shell=bash
 disable=SC1091

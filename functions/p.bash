@@ -59,13 +59,13 @@ p() {
   }
 
   export -f __p_preview __ui_use_color __ui_sgr
-  local ui_lib=${BEBASH_LIB:-${BASH_SOURCE[0]%/lib/functions/p.bash}}/lib/ui.bash
+  local ui_lib=${BEBASH_LIB:-${BASH_SOURCE[0]%/functions/p.bash}}/lib/ui.bash
   local preview="FORCE_COLOR=1 bash -c 'source \"$ui_lib\" 2>/dev/null; __p_preview \"\$1\"' fzf {2}"
   local sel
   sel=$(
     command fd --type d --hidden --glob '.git' --prune "${roots[@]}" 2>/dev/null |
       command awk -v h="$HOME" '{ f=$0; sub(/\/\.git\/?$/, "", f); d=f; if (index(d,h)==1) d="~" substr(d, length(h)+1); print d "\t" f }' |
-      command fzf --delimiter "$(printf '\t')" --with-nth 1 --preview "$preview" ${1:+--query "$*"}
+      command fzf --delimiter "$(printf '\t')" --with-nth 1 --preview "$preview" "${1:+--query "$*"}"
   ) || return 0
   [[ -n "$sel" ]] || return 0
   cd -- "${sel#*$'\t'}" || return 1

@@ -13,7 +13,7 @@ __bebash_doctor_add() {
 __bebash_doctor_required_ok() {
   local check=$1
   case "$check" in
-  bash | payload | overlay | path | log-writable) return 0 ;;
+  bash | payload | config | data | path | log-writable) return 0 ;;
   *) return 1 ;;
   esac
 }
@@ -45,7 +45,7 @@ bebash::cmd::doctor() {
   }
 
   local -a __BEBASH_DOCTOR_CHECKS=()
-  local required_failed=0 status detail tool log_file log_dir tmp
+  local required_failed=0 status detail tool log_file log_dir tmp stale
 
   if ((BASH_VERSINFO[0] > 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] >= 4))); then
     __bebash_doctor_add bash ok "bash ${BASH_VERSION}"
@@ -54,19 +54,37 @@ bebash::cmd::doctor() {
     required_failed=1
   fi
 
-  if [[ -r "${BEBASH_LIB}/init.bash" && -d "${BEBASH_LIB}/lib/functions" ]]; then
+  if [[ -r "${BEBASH_LIB}/init.bash" \
+    && -d "${BEBASH_LIB}/lib" \
+    && -r "${BEBASH_LIB}/lib/core.bash" \
+    && -d "${BEBASH_LIB}/functions" \
+    && -d "${BEBASH_LIB}/libexec/commands" \
+    && -d "${BEBASH_LIB}/rc.d" ]]; then
     __bebash_doctor_add payload ok "$BEBASH_LIB"
   else
     __bebash_doctor_add payload fail "$BEBASH_LIB"
     required_failed=1
   fi
 
-  if [[ -d "$(__bebash_overlay_dir)" ]]; then
-    __bebash_doctor_add overlay ok "$(__bebash_overlay_dir)"
+  if [[ -d "$(__bebash_config_dir)" ]]; then
+    __bebash_doctor_add config ok "$(__bebash_config_dir)"
   else
-    __bebash_doctor_add overlay fail "$(__bebash_overlay_dir)"
+    __bebash_doctor_add config fail "$(__bebash_config_dir)"
     required_failed=1
   fi
+
+  if [[ -d "$(__bebash_user_data_dir)" ]]; then
+    __bebash_doctor_add data ok "$(__bebash_user_data_dir)"
+  else
+    __bebash_doctor_add data fail "$(__bebash_user_data_dir)"
+    required_failed=1
+  fi
+
+  for stale in functions lib rc.d modules; do
+    if [[ -e "$(__bebash_config_dir)/$stale" ]]; then
+      __bebash_doctor_add "old-config-$stale" warn "$(__bebash_config_dir)/$stale"
+    fi
+  done
 
   if command -v bebash >/dev/null 2>&1; then
     __bebash_doctor_add path ok "$(command -v bebash)"

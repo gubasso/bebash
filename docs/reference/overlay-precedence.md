@@ -2,34 +2,40 @@
 
 The exact directory map and load order that make user files win over shipped
 ones. Concept: [../explanation/overlay-model.md](../explanation/overlay-model.md);
-decision: [ADR-0005](../decisions/ADR-0005-payload-vs-xdg-user-overlay.md).
+decision: [ADR-0022](../decisions/ADR-0022-overlay-config-vs-data-split.md)
+(supersedes [ADR-0005](../decisions/ADR-0005-payload-vs-xdg-user-overlay.md)).
 
 ## Directory map
 
+The user overlay is split by XDG role: *code* lives under the data root
+`~/.local/share/bebash/`, true *config* under the config root `~/.config/bebash/`.
+
 | Concern            | Shipped payload (clobbered)      | User overlay (never clobbered)          |
 | ------------------ | -------------------------------- | --------------------------------------- |
-| Root               | `$PREFIX/lib/bebash/`            | `~/.config/bebash/`                     |
-| Entry / config     | `init.bash`                     | `config.bash` (sourced last)            |
-| Functions          | `lib/functions/<n>.bash`        | `functions/<n>.bash` (wins)             |
+| Code root          | `$PREFIX/lib/bebash/`            | `~/.local/share/bebash/`                |
+| Config root        | —                                | `~/.config/bebash/`                     |
+| Entry / config     | `init.bash`                     | `config.bash` (in config root, sourced last) |
+| Functions          | `functions/<n>.bash`        | `functions/<n>.bash` (wins)             |
 | Libs               | `lib/<n>.bash`                  | `lib/<n>.bash` (augments)               |
-| Startup modules    | `lib/rc.d/NN-*.bash`            | `rc.d/*.bash` (added after)             |
-| Disable list       | —                                | `disabled.d/<name>`                     |
+| Startup modules    | `rc.d/NN-*.bash`            | `rc.d/*.bash` (added after)             |
+| Disable list       | —                                | `disabled.d/<name>` (in config root)    |
 
-For the author, the overlay dir is the stow target of `~/.dotfiles/bebash/`;
-bebash only reads `~/.config/bebash/` ([overlay model](../explanation/overlay-model.md)).
+For the author, the config root is the stow target of `~/.dotfiles/bebash/`;
+bebash reads code from `~/.local/share/bebash/` and config from
+`~/.config/bebash/` ([overlay model](../explanation/overlay-model.md)).
 
 ## Load order (`init.bash`)
 
 ```text
-1. resolve BEBASH_LIB (payload) and BEBASH_CONFIG_DIR (overlay)
+1. resolve BEBASH_LIB (payload), BEBASH_DATA_DIR (user code), BEBASH_CONFIG_DIR (user config)
 2. EAGER core:   source log → ui → helpers → autoload registry
-3. register SHIPPED functions        (stubs)         ← from $BEBASH_LIB/lib/functions
-4. register SHIPPED libs/modules      (records)
+3. register SHIPPED functions        (stubs)         ← from $BEBASH_LIB/functions
+4. register SHIPPED libs               (records)
 5. source SHIPPED rc.d/*.bash         (lexical order)
-6. register USER functions            (stubs, replace shipped of same name) ← overlay
-7. register USER libs/modules
-8. source USER rc.d/*.bash
-9. source USER config.bash
+6. register USER functions            (stubs, replace shipped of same name) ← $BEBASH_DATA_DIR
+7. register USER libs
+8. source USER rc.d/*.bash             ← $BEBASH_DATA_DIR
+9. source USER config.bash             ← $BEBASH_CONFIG_DIR
 10. apply disabled.d/*                (unset -f each named function)
 ```
 

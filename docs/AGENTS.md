@@ -60,6 +60,9 @@ source-files:
   - decisions/ADR-0018-committed-version-is-authoring-sot.md
   - decisions/ADR-0019-payload-init-shell-wiring-and-bebash-lib-root.md
   - decisions/ADR-0020-repository-self-containment.md
+  - decisions/ADR-0021-payload-fhs-role-split.md
+  - decisions/ADR-0022-overlay-config-vs-data-split.md
+  - decisions/ADR-0023-standalone-command-lane-and-naming.md
 token-estimate: 24000
 ---
 
@@ -91,7 +94,7 @@ directory. These docs are the design + spec that drive the implementation.
   layout, module/loader, `ui`/`log` APIs, output channels, exit codes, config +
   XDG, CLI conventions, installer + manifest, overlay precedence, release
   workflow, privacy tiers, testing, tooling, conventions, inspiration projects.
-- **decisions/** — 20 lean ADRs (`ADR-NNNN-slug.md`, ≤350 words, never deleted).
+- **decisions/** — 23 lean ADRs (`ADR-NNNN-slug.md`, ≤350 words, never deleted).
 
 ## Source map
 

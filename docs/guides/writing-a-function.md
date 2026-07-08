@@ -7,7 +7,7 @@ in [../reference/module-and-loader.md](../reference/module-and-loader.md),
 
 ## 1. One file, one function
 
-Create `lib/functions/<name>.bash`. The filename **is** the function name, so the
+Create `functions/<name>.bash`. The filename **is** the function name, so the
 autoloader can register it without a lookup table. Start with the shell directive
 and a self-describing `desc:` marker on line 2:
 

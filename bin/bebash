@@ -3,22 +3,25 @@ set -euo pipefail
 shopt -s inherit_errexit 2>/dev/null || true
 
 __bebash_bin_source() {
-	local src=${BASH_SOURCE[0]}
-	while [[ -L "$src" ]]; do
-		local dir
-		dir=$(cd -P -- "$(dirname -- "$src")" && pwd)
-		src=$(readlink -- "$src")
-		[[ "$src" != /* ]] && src=$dir/$src
-	done
-	cd -P -- "$(dirname -- "$src")" && pwd
+  local src=${BASH_SOURCE[0]}
+  while [[ -L "$src" ]]; do
+    local dir
+    dir=$(cd -P -- "$(dirname -- "$src")" && pwd)
+    src=$(readlink -- "$src")
+    [[ "$src" != /* ]] && src=$dir/$src
+  done
+  cd -P -- "$(dirname -- "$src")" && pwd
 }
 
 __bebash_bin_dir=$(__bebash_bin_source)
 export __BEBASH_BIN_DIR=$__bebash_bin_dir
 if [[ -z "${BEBASH_LIB:-}" ]]; then
-	BEBASH_LIB=$(cd -P -- "$__bebash_bin_dir/.." && pwd)
-	export BEBASH_LIB
+  BEBASH_LIB=$(cd -P -- "$__bebash_bin_dir/.." && pwd)
+  export BEBASH_LIB
 fi
+BEBASH_CONFIG_DIR=${BEBASH_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/bebash}
+BEBASH_DATA_DIR=${BEBASH_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/bebash}
+export BEBASH_CONFIG_DIR BEBASH_DATA_DIR
 
 # shellcheck source=lib/log.bash
 source "$BEBASH_LIB/lib/log.bash"

@@ -16,7 +16,7 @@ test/
 └── cmd_<name>.bats          # CLI-subcommand tests
 ```
 
-Naming distinguishes the two surfaces: `fn_*` exercises `lib/functions/`,
+Naming distinguishes the two surfaces: `fn_*` exercises `functions/`,
 `cmd_*` exercises the `bebash` CLI. One test file per public function/command.
 
 ## `common-setup.bash`

@@ -20,7 +20,8 @@ The contract a piece of bebash code follows. Sits on top of
 
 - **Sourced** into the shell/CLI runtime → `.bash` (no shebang;
   `# shellcheck shell=bash`). This covers everything under `lib/`, including the
-  CLI machinery `core.bash`, `loader.bash`, and `commands/cmd_*.bash`.
+  CLI machinery `core.bash` and `loader.bash`, and the CLI handlers
+  `libexec/commands/cmd_*.bash`.
 - **Executed** top-level scripts → `.sh` (`install.sh`, `uninstall.sh`, and their
   sourced helper `install-common.sh`, which stays in that family).
 - The CLI entry point `bin/bebash` has no extension (it is the command name).

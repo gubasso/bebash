@@ -9,8 +9,8 @@ which stay in the author's overlay. Decision:
 
 | Tier | Rule                                             | Lands in                          |
 | ---- | ------------------------------------------------ | --------------------------------- |
-| 1    | Generic tooling, no personal data → ship as-is.  | `lib/functions/`                  |
-| 2    | Generic behavior, hardcodes author's layout → ship the mechanism, drive targets from config. | `lib/functions/` + `config.bash` defaults |
+| 1    | Generic tooling, no personal data → ship as-is.  | `functions/`                  |
+| 2    | Generic behavior, hardcodes author's layout → ship the mechanism, drive targets from config. | `functions/` + `config.bash` defaults |
 | 3    | Personal/company/private → never ships.          | author's `~/.dotfiles/bebash/` overlay |
 
 ## Tier 1 — ships as-is
@@ -48,7 +48,7 @@ any user layers personal code ([overlay model](../explanation/overlay-model.md))
 
 ## Shipping rule
 
-Before a function enters `lib/functions/`, re-verify it against its source: grep
+Before a function enters `functions/`, re-verify it against its source: grep
 for `$HOME/<personal-dir>`, company names, credentials, browser profiles, and
 personal repo paths. Anything found → Tier 2 (parameterize) or Tier 3 (overlay),
 never Tier 1.

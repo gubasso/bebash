@@ -19,11 +19,11 @@ __bebash_desc_from_file() {
 
 __bebash_iter_function_files() {
   local origin dir file name desc
-  for origin in shipped overlay; do
+  for origin in shipped data; do
     if [[ "$origin" == shipped ]]; then
-      dir="${BEBASH_LIB}/lib/functions"
+      dir="${BEBASH_LIB}/functions"
     else
-      dir="$(__bebash_overlay_dir)/functions"
+      dir="$(__bebash_user_data_dir)/functions"
     fi
     [[ -d "$dir" ]] || continue
     for file in "$dir"/*.bash; do

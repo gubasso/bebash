@@ -13,19 +13,20 @@ bebash/
 ├── lib/
 │   ├── core.bash               # bebash::main, global flags, subcommand dispatch
 │   ├── loader.bash             # source-on-dispatch resolver for CLI commands
-│   ├── autoload.bash           # lazy registry (function/lib/module kinds)
+│   ├── autoload.bash           # lazy registry (function/lib kinds)
 │   ├── helpers.bash            # __require, __cached_init, path helpers (eager)
 │   ├── ui.bash                 # __ui_* human output + __UI_SGR palette (eager)
 │   ├── log.bash                # __log_* machine logs (eager)
 │   ├── git.bash                # git helpers (lazy, load-guarded)
 │   ├── project.bash            # __project_nvim mechanism (lazy)
-│   ├── commands/               # one file per CLI subcommand
-│   │   └── cmd_<name>.bash      # defines bebash::cmd::<name>
-│   ├── functions/              # shipped user-facing functions (lazy)
-│   │   └── <name>.bash          # defines <name>; filename == function name
-│   ├── rc.d/                   # startup modules, sourced in lexical order
-│   │   └── NN-<topic>.bash
-│   └── templates/              # scaffolds for `bebash edit --new` / init-user
+├── libexec/
+│   └── commands/               # one file per CLI subcommand
+│       └── cmd_<name>.bash      # defines bebash::cmd::<name>
+├── functions/                  # shipped user-facing functions (lazy)
+│   └── <name>.bash              # defines <name>; filename == function name
+├── rc.d/                       # startup modules, sourced in lexical order
+│   └── NN-<topic>.bash
+├── templates/                  # scaffolds for `bebash edit --new` / init-user
 ├── completions/
 │   └── bebash.bash             # bash completion for the CLI
 ├── man/
@@ -54,12 +55,12 @@ bebash/
   dispatches.
 - `init.bash` — Framework entry point; the file `~/.bashrc` sources.
 - `lib/` — Shared machinery sourced by both the framework and the CLI.
-- `lib/commands/` — CLI-only subcommand handlers (`bebash::cmd::*`).
-- `lib/functions/` — Library functions exposed to interactive shells
+- `libexec/commands/` — CLI-only subcommand handlers (`bebash::cmd::*`).
+- `functions/` — Library functions exposed to interactive shells
   (lazy-loaded).
-- `lib/rc.d/` — Startup modules (options, tool integrations), lexical order,
+- `rc.d/` — Startup modules (options, tool integrations), lexical order,
   guarded.
-- `lib/templates/` — Scaffolds emitted by the CLI (`init-user`, `edit --new`).
+- `templates/` — Scaffolds emitted by the CLI (`init-user`, `edit --new`).
 - `completions/` — Shell completion for the CLI.
 - `man/` — scdoc man-page source, built by `just man`.
 - `test/` — bats-core suite; `fn_*` = library, `cmd_*` = CLI.
@@ -71,23 +72,26 @@ One rule (specified in [conventions.md](conventions.md#file-extensions)): files
 **sourced** into the shell or CLI runtime use `.bash` (no shebang;
 `# shellcheck shell=bash`); the **executed** top-level scripts `install.sh` /
 `uninstall.sh` use `.sh`; the `bin/bebash` entry point has no extension. So the
-CLI machinery (`core.bash`, `loader.bash`, `commands/cmd_*.bash`) is `.bash` like
+CLI machinery (`core.bash`, `loader.bash`, `libexec/commands/cmd_*.bash`) is `.bash` like
 every other sourced file; `install-common.sh` is `.sh` because it belongs to the
 executed installer family.
 
 ## The framework/CLI split
 
-`lib/functions/` is the **library** surface — things a sourced shell should have.
-`lib/commands/` is the **CLI** surface — things you invoke as `bebash <name>`.
+`functions/` is the **library** surface — things a sourced shell should have.
+`libexec/commands/` is the **CLI** surface — things you invoke as `bebash <name>`.
 Shared helpers live directly in `lib/`. Keeping the two apart is
-[ADR-0003](../decisions/ADR-0003-dual-nature-framework-and-cli.md); the module
-rules for both are in [module-and-loader.md](module-and-loader.md).
+[ADR-0003](../decisions/ADR-0003-dual-nature-framework-and-cli.md) and
+[ADR-0021](../decisions/ADR-0021-payload-fhs-role-split.md); loader rules are in
+[module-and-loader.md](module-and-loader.md).
 
 ## Install-time mapping
 
-The `lib/` tree, `bin/bebash`, `completions/`, `man/`, `init.bash`, and `VERSION`
-are copied into the payload at `$PREFIX/lib/bebash/` (with the CLI symlinked onto
-`PATH`). `VERSION` is a committed file — the authoring source of truth
+The `bin/`, `lib/`, `libexec/`, `functions/`, `rc.d/`, and `templates/` trees
+plus `init.bash` and `VERSION` are copied into the payload at
+`$PREFIX/lib/bebash/` (with the CLI symlinked onto `PATH`). Completion and man
+files are installed under XDG data targets, not copied into the payload.
+`VERSION` is a committed file — the authoring source of truth
 ([release-workflow.md](release-workflow.md#version-source-of-truth),
 [ADR-0018](../decisions/ADR-0018-committed-version-is-authoring-sot.md)) — copied
 into the payload like any other file. `docs/`, `test/`, and repo tooling are

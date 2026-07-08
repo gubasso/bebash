@@ -3,7 +3,7 @@ setup() {
   _common_setup
   source lib/ui.bash
   source lib/helpers.bash
-  source lib/functions/slug.bash
+  source functions/slug.bash
   bindir="$(mktemp -d)"
   export PATH="$bindir:$PATH"
 }

@@ -12,15 +12,19 @@ concept is in [../explanation/overlay-model.md](../explanation/overlay-model.md)
 bebash init-user
 ```
 
-This creates the overlay skeleton at `~/.config/bebash/`
-(`$XDG_CONFIG_HOME/bebash/`):
+This creates the overlay skeleton, split by XDG role. Your *code* lives under the
+data root `~/.local/share/bebash/` (`$BEBASH_DATA_DIR`); your *config* under the
+config root `~/.config/bebash/` (`$BEBASH_CONFIG_DIR`):
 
 ```text
-~/.config/bebash/
-├── config.bash        # your env, options, project shortcuts (sourced last)
+~/.local/share/bebash/     # your code (data root)
 ├── functions/         # your functions (registered after shipped → they win)
 ├── lib/               # your libs (available via __bebash_require_lib)
 ├── rc.d/              # your startup modules (sourced after shipped rc.d)
+└── commands/          # your standalone executables (exposed via ~/.local/bin symlinks)
+
+~/.config/bebash/          # your config (config root)
+├── config.bash        # your env, options, project shortcuts (sourced last)
 └── disabled.d/        # names of shipped functions to suppress
 ```
 
@@ -29,7 +33,7 @@ This creates the overlay skeleton at `~/.config/bebash/`
 Drop a file named for the function, same format as a shipped one:
 
 ```bash
-# ~/.config/bebash/functions/deploy.bash
+# ~/.local/share/bebash/functions/deploy.bash
 # shellcheck shell=bash
 : 'desc: Deploy the current project.'
 
@@ -44,7 +48,7 @@ Create a file with the **same name** as the shipped one. Because your overlay
 registers last, your version wins — no config needed:
 
 ```bash
-# ~/.config/bebash/functions/gpr.bash  → replaces the shipped gpr
+# ~/.local/share/bebash/functions/gpr.bash  → replaces the shipped gpr
 ```
 
 ## 4. Disable a shipped function

@@ -115,6 +115,11 @@ __bebash_install_prune_empty_dirs() {
   local dir
   for dir in \
     "$BEBASH_INSTALL_APP_ROOT/bin" \
+    "$BEBASH_INSTALL_APP_ROOT/libexec/commands" \
+    "$BEBASH_INSTALL_APP_ROOT/libexec" \
+    "$BEBASH_INSTALL_APP_ROOT/functions" \
+    "$BEBASH_INSTALL_APP_ROOT/rc.d" \
+    "$BEBASH_INSTALL_APP_ROOT/templates" \
     "$BEBASH_INSTALL_APP_ROOT/lib/commands" \
     "$BEBASH_INSTALL_APP_ROOT/lib/functions" \
     "$BEBASH_INSTALL_APP_ROOT/lib/rc.d" \

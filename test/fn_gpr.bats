@@ -4,7 +4,7 @@ setup() {
   source lib/ui.bash
   source lib/helpers.bash
   source lib/autoload.bash
-  source lib/functions/gpr.bash
+  source functions/gpr.bash
   __autoload_register lib git "$PWD/lib/git.bash"
   bindir="$(mktemp -d)"
   export PATH="$bindir:$PATH"

@@ -6,27 +6,27 @@ The contract for the `bebash` management CLI (the secondary surface —
 
 ## Subcommand set
 
-- `bebash doctor` — Health check: payload/overlay paths, versions,
+- `bebash doctor` — Health check: payload/config/data paths, versions,
   missing deps.
 - `bebash list` — List available functions with their `desc:`
   descriptions.
-- `bebash path` — Print resolved paths (payload, overlay, log, manifest).
+- `bebash path` — Print resolved paths (payload, config, data, log, manifest).
 - `bebash edit <fn>` — Open a function in `$EDITOR` (`--new <name>`
   scaffolds one).
-- `bebash init-user` — Scaffold the user overlay at `~/.config/bebash/`.
+- `bebash init-user` — Scaffold user config and data roots.
 - `bebash version` — Print the version — reads the committed/installed
   `VERSION` (the authoring source of truth), falling back to
   `git describe --tags` in a dev checkout without one.
 - `bebash help [cmd]` — Show usage (also `-h`/`--help`).
 
 Start with these; add more on demand. Each is one file
-`lib/commands/cmd_<name>.bash` defining `bebash::cmd::<name>`.
+`libexec/commands/cmd_<name>.bash` defining `bebash::cmd::<name>`.
 
 ## Per-command behavior
 
 ### `doctor`
 
-- stdout: one line per check: `bash`≥4.4, payload & overlay dirs exist,
+- stdout: one line per check: `bash`≥4.4, payload, config, and data dirs exist,
   CLI on `PATH`, log writable, each optional tool (`fzf`, `scdoc`,
   `git-cliff`) present/absent. `--json` emits an array of
   `{check,status,detail}`.
@@ -36,27 +36,27 @@ Start with these; add more on demand. Each is one file
 ### `list`
 
 - stdout: one row per registered function: `<name>  <desc>` (from the
-  `desc:` marker), sorted; shows shipped vs overlay origin. `--json`
+  `desc:` marker), sorted; shows shipped vs data origin. `--json`
   emits `[{name,desc,origin}]`.
 - Failure → exit: `0` always (empty list is valid).
 
 ### `path`
 
-- stdout: resolved paths, one `key=value` per line: `payload`, `overlay`,
-  `log`, `manifest`, `completion`, `man`. `--json` emits an object.
+- stdout: resolved paths, one `key=value` per line: `payload`, `config`,
+  `data`, `log`, `manifest`, `completion`, `man`. `--json` emits an object.
 - Failure → exit: `0`.
 
 ### `edit <fn>`
 
 - stdout: nothing on stdout; opens `$EDITOR` on the file. `--new <name>`
-  scaffolds from `lib/templates/` into the overlay first.
+  scaffolds from `templates/` into `$BEBASH_DATA_DIR/functions` first.
 - Failure → exit: `2` if `<fn>` is missing and `--new` absent; `69` if
   `$EDITOR` unset.
 
 ### `init-user`
 
-- stdout: prints the overlay path it created/verified.
-- Failure → exit: `0` (idempotent; never clobbers an existing overlay).
+- stdout: prints `config=<path>` and `data=<path>`.
+- Failure → exit: `0` (idempotent; never clobbers existing user files).
 
 ### `version`
 

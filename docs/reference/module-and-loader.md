@@ -7,8 +7,8 @@ The rules for how code files are shaped, named, registered, and loaded. Concept:
 
 | Path                       | Defines                | Visibility |
 | -------------------------- | ---------------------- | ---------- |
-| `lib/functions/<name>.bash`| `<name>`               | public (library) |
-| `lib/commands/cmd_<name>.bash`| `bebash::cmd::<name>` | public (CLI) |
+| `functions/<name>.bash`| `<name>`               | public (library) |
+| `libexec/commands/cmd_<name>.bash`| `bebash::cmd::<name>` | public (CLI) |
 | `lib/<name>.bash`          | shared helpers/libs    | shared     |
 | any file, `__<name>`       | private helper         | private (same file) |
 
@@ -43,7 +43,6 @@ At startup `lib/autoload.bash` builds a registry **keyed by kind**
 | -------------------------------------- | ------------------------------------------------------------- |
 | `__autoload_register function <n> <p>` | Define a stub `<n>` that sources `<p>` on first call, then re-invokes. |
 | `__autoload_register lib <n> <p>`      | Record `<n>→<p>`; **not** sourced until required.             |
-| `__autoload_register module <n> <p>`   | Record a module group for on-demand sourcing.                 |
 | `__bebash_require_lib <n>`             | Source lib `<n>` once (guarded); no-op if loaded. Returns `0` on success, `69` (EX_UNAVAILABLE) if `<n>` is not registered. |
 
 Libs load only when a function asks for them:
@@ -66,7 +65,7 @@ __autoload_register() {
     function)
       eval "$(printf '%s() { unset -f %s; source %q || return; %s "$@"; }' \
         "$name" "$name" "$path" "$name")" ;;
-    lib|module) __BEBASH_REGISTRY["$kind:$name"]="$path" ;;   # record only
+    lib) __BEBASH_REGISTRY["$kind:$name"]="$path" ;;   # record only
   esac
 }
 ```
@@ -105,7 +104,7 @@ that command runs.
 ```bash
 bebash::loader::dispatch() {
   local sub="$1"; shift
-  local path="${BEBASH_LIB}/lib/commands/cmd_${sub}.bash"
+  local path="${BEBASH_LIB}/libexec/commands/cmd_${sub}.bash"
   [[ -r "$path" ]] || bebash::die 2 "unknown command: ${sub}"
   # shellcheck source=/dev/null
   source "$path"

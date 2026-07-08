@@ -54,12 +54,20 @@ trap cleanup EXIT INT TERM
 rm -rf -- \
   "${BEBASH_INSTALL_APP_ROOT:?}/bin" \
   "${BEBASH_INSTALL_APP_ROOT:?}/lib" \
+  "${BEBASH_INSTALL_APP_ROOT:?}/libexec" \
+  "${BEBASH_INSTALL_APP_ROOT:?}/functions" \
+  "${BEBASH_INSTALL_APP_ROOT:?}/rc.d" \
+  "${BEBASH_INSTALL_APP_ROOT:?}/templates" \
   "$BEBASH_INSTALL_APP_ROOT/init.bash" \
   "$BEBASH_INSTALL_APP_ROOT/VERSION"
 mkdir -p -- "$BEBASH_INSTALL_APP_ROOT"
 
 __bebash_install_copy_tree "$repo_root/bin" "$BEBASH_INSTALL_APP_ROOT/bin" "$tmp_manifest"
 __bebash_install_copy_tree "$repo_root/lib" "$BEBASH_INSTALL_APP_ROOT/lib" "$tmp_manifest"
+__bebash_install_copy_tree "$repo_root/libexec" "$BEBASH_INSTALL_APP_ROOT/libexec" "$tmp_manifest"
+__bebash_install_copy_tree "$repo_root/functions" "$BEBASH_INSTALL_APP_ROOT/functions" "$tmp_manifest"
+__bebash_install_copy_tree "$repo_root/rc.d" "$BEBASH_INSTALL_APP_ROOT/rc.d" "$tmp_manifest"
+__bebash_install_copy_tree "$repo_root/templates" "$BEBASH_INSTALL_APP_ROOT/templates" "$tmp_manifest"
 
 cp -- "$repo_root/init.bash" "$BEBASH_INSTALL_APP_ROOT/init.bash"
 __bebash_install_record "$BEBASH_INSTALL_APP_ROOT/init.bash" "$tmp_manifest"

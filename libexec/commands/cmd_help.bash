@@ -17,7 +17,7 @@ bebash::cmd::help() {
     return $?
   }
 
-  local file="${BEBASH_LIB}/lib/commands/cmd_${sub}.bash" usage_fn
+  local file="${BEBASH_LIB}/libexec/commands/cmd_${sub}.bash" usage_fn
   # shellcheck source=/dev/null
   source "$file"
   usage_fn="__bebash_cmd_$(__bebash_cmd_symbol "$sub")_usage"

@@ -3,7 +3,7 @@ setup() {
   _common_setup
   source lib/ui.bash
   source lib/helpers.bash
-  source lib/functions/fdclip.bash
+  source functions/fdclip.bash
   bindir="$(mktemp -d)"
   export PATH="$bindir:$PATH"
 }

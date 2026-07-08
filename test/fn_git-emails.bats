@@ -3,7 +3,7 @@ setup() {
   _common_setup
   source lib/ui.bash
   source lib/helpers.bash
-  source lib/functions/git-emails.bash
+  source functions/git-emails.bash
   bindir="$(mktemp -d)"
   export PATH="$bindir:$PATH"
 }

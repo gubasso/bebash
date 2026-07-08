@@ -35,6 +35,15 @@ run_uninstall() {
   assert_file_executable "$PREFIX/lib/bebash/bin/bebash"
   assert_file_exists "$PREFIX/lib/bebash/init.bash"
   assert_file_exists "$PREFIX/lib/bebash/lib/loader.bash"
+  assert_file_exists "$PREFIX/lib/bebash/lib/core.bash"
+  assert_dir_exists "$PREFIX/lib/bebash/libexec/commands"
+  assert_dir_exists "$PREFIX/lib/bebash/functions"
+  assert_dir_exists "$PREFIX/lib/bebash/rc.d"
+  assert_dir_exists "$PREFIX/lib/bebash/templates"
+  assert_file_not_exists "$PREFIX/lib/bebash/lib/commands"
+  assert_file_not_exists "$PREFIX/lib/bebash/lib/functions"
+  assert_file_not_exists "$PREFIX/lib/bebash/lib/rc.d"
+  assert_file_not_exists "$PREFIX/lib/bebash/lib/templates"
   assert_symlink_to "$PREFIX/lib/bebash/bin/bebash" "$PREFIX/bin/bebash"
   assert_file_exists "$XDG_DATA_HOME/bash-completion/completions/bebash"
   if [[ -e "$REPO_ROOT/man/bebash.1" ]] || command -v scdoc >/dev/null 2>&1; then
@@ -131,6 +140,24 @@ run_uninstall() {
   ! grep -Fqx -- "$stale" "$XDG_STATE_HOME/bebash/install-manifest"
 }
 
+@test "reinstall prunes old empty layout dirs" {
+  run_install
+  assert_success
+
+  mkdir -p \
+    "$PREFIX/lib/bebash/lib/commands" \
+    "$PREFIX/lib/bebash/lib/functions" \
+    "$PREFIX/lib/bebash/lib/rc.d" \
+    "$PREFIX/lib/bebash/lib/templates"
+
+  run_install
+  assert_success
+  assert_file_not_exists "$PREFIX/lib/bebash/lib/commands"
+  assert_file_not_exists "$PREFIX/lib/bebash/lib/functions"
+  assert_file_not_exists "$PREFIX/lib/bebash/lib/rc.d"
+  assert_file_not_exists "$PREFIX/lib/bebash/lib/templates"
+}
+
 @test "uninstall removes manifest set strips block and preserves overlay" {
   run_install
   assert_success
@@ -146,6 +173,7 @@ run_uninstall() {
   assert_file_not_contains "$HOME/.bashrc" '# >>> bebash >>>'
   assert_file_contains "$HOME/.bashrc" 'custom line'
   assert_file_exists "$XDG_CONFIG_HOME/bebash/config.bash"
+  assert_file_not_exists "$XDG_DATA_HOME/bebash/functions"
 }
 
 @test "uninstall refuses out-of-whitelist manifest without mutating files or bashrc" {

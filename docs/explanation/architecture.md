@@ -19,14 +19,16 @@ bebash is two things that share a code base:
 
 Keeping these separate is a deliberate decision
 ([ADR-0003](../decisions/ADR-0003-dual-nature-framework-and-cli.md)): the
-library surface lives in `lib/functions/`, the CLI surface in `lib/commands/`,
+library surface lives in `functions/`, the CLI surface in `libexec/commands/`,
 and shared machinery in `lib/` (helpers, ui, log, loader, autoload registry).
 
 ## The install picture
 
 `just install` copies an immutable **payload** to `$PREFIX/lib/bebash/` and
 symlinks the CLI onto `PATH`. Your personal additions live in a separate
-**overlay** at `~/.config/bebash/` that the installer never touches. The two
+**overlay**, split by XDG role — code at `~/.local/share/bebash/`
+(`$BEBASH_DATA_DIR`), config at `~/.config/bebash/` (`$BEBASH_CONFIG_DIR`) — that
+the installer never touches. The two
 layers are explained in [overlay-model.md](overlay-model.md); the install
 mechanics are in
 [../reference/installer-and-manifest.md](../reference/installer-and-manifest.md).
@@ -37,11 +39,11 @@ When a new interactive shell sources `init.bash`, stages run in a fixed order:
 
 ```text
 init.bash
-  ├─ resolve payload dir (BEBASH_LIB) and overlay dir (BEBASH_CONFIG_DIR)
+  ├─ resolve payload dir (BEBASH_LIB), user code dir (BEBASH_DATA_DIR), user config dir (BEBASH_CONFIG_DIR)
   ├─ EAGER core:   source log.bash → ui.bash → helpers.bash → autoload registry
-  ├─ register SHIPPED:  functions/ (stubs), libs/modules (records)
+  ├─ register SHIPPED:  functions/ (stubs), libs (records)
   ├─ source SHIPPED rc.d/*.bash   (lexical order, each dep-guarded)
-  ├─ register USER overlay:  functions/ (win), libs, modules
+  ├─ register USER overlay:  functions/ (win), libs
   ├─ source USER rc.d/*.bash
   ├─ source USER config.bash
   └─ apply disabled.d/  (unset masked functions)
@@ -62,7 +64,8 @@ Two invariants make this correct:
 - **User registration comes last.** Because a stub or function defined later wins,
   a user file shadows the shipped one of the same name for free — the basis of
   the overlay's override semantics
-  ([ADR-0005](../decisions/ADR-0005-payload-vs-xdg-user-overlay.md)).
+  ([ADR-0022](../decisions/ADR-0022-overlay-config-vs-data-split.md), which
+  supersedes [ADR-0005](../decisions/ADR-0005-payload-vs-xdg-user-overlay.md)).
 
 Everything between the eager core and the overlay is *registration*, not
 execution: functions and libs become cheap stubs/records and are only sourced on
@@ -72,7 +75,7 @@ first use. That is what keeps startup sharp regardless of how much ships — see
 ## The CLI path
 
 `bin/bebash` is a thin shim: resolve its own location through symlinks, source
-the shared core, then dispatch to `lib/commands/cmd_<name>.bash`, which is sourced
+the shared core, then dispatch to `libexec/commands/cmd_<name>.bash`, which is sourced
 only when that subcommand runs. The framework and the CLI thus share helpers but
 never load each other's bulk. Conventions for the CLI surface are in
 [../reference/cli-conventions.md](../reference/cli-conventions.md).

@@ -10,15 +10,17 @@ bebash is XDG-first; it never uses `~/.bebash/`. Defaults follow the
 
 | Purpose            | Variable          | bebash path (default)                       |
 | ------------------ | ----------------- | ------------------------------------------- |
-| User overlay/config| `XDG_CONFIG_HOME` | `~/.config/bebash/`                         |
+| User config        | `XDG_CONFIG_HOME` | `~/.config/bebash/`                         |
+| User code/data     | `XDG_DATA_HOME`   | `~/.local/share/bebash/`                    |
 | Shipped payload    | `PREFIX`          | `~/.local/lib/bebash/` (`$PREFIX/lib/bebash`) |
 | CLI on PATH        | `PREFIX`          | `~/.local/bin/bebash`                       |
 | State (logs, manifest) | `XDG_STATE_HOME` | `~/.local/state/bebash/`                 |
 | Cache (autoload index) | `XDG_CACHE_HOME` | `~/.cache/bebash/`                       |
 | Data (completion)  | `XDG_DATA_HOME`   | `~/.local/share/bash-completion/completions/` |
 
-Runtime resolution: `init.bash` sets `BEBASH_LIB` (payload root) and
-`BEBASH_CONFIG_DIR` (overlay root). Layout details:
+Runtime resolution: `init.bash` sets `BEBASH_LIB` (payload root),
+`BEBASH_CONFIG_DIR` (config root), and `BEBASH_DATA_DIR` (user code/data root).
+Layout details:
 [overlay-precedence.md](overlay-precedence.md),
 [installer-and-manifest.md](installer-and-manifest.md).
 
@@ -31,7 +33,7 @@ built-in defaults  <  user config.bash  <  environment vars  <  CLI flags
 ```
 
 - **Defaults** — hard-coded in the shipped code; always present.
-- **`config.bash`** — the user overlay's `~/.config/bebash/config.bash`, sourced
+- **`config.bash`** — `~/.config/bebash/config.bash`, sourced
   last in the load pipeline so it can override shipped defaults.
 - **Environment** — `BEBASH_*` vars for a session/invocation.
 - **CLI flags** — highest; a one-off override for a single `bebash` call.
@@ -41,7 +43,8 @@ built-in defaults  <  user config.bash  <  environment vars  <  CLI flags
 | Variable               | Effect                                                     |
 | ---------------------- | ---------------------------------------------------------- |
 | `BEBASH_LIB`           | Payload root (set by `init.bash`; override for testing).   |
-| `BEBASH_CONFIG_DIR`    | Overlay root (default `$XDG_CONFIG_HOME/bebash`).           |
+| `BEBASH_CONFIG_DIR`    | Config root (default `$XDG_CONFIG_HOME/bebash`).             |
+| `BEBASH_DATA_DIR`      | User code/data root (default `$XDG_DATA_HOME/bebash`).       |
 | `BEBASH_PROJECT_ROOTS` | Array of roots for the `p` fuzzy-cd function (default `("$HOME/Projects")`). |
 | `BEBASH_LOG_LEVEL`     | Machine-log threshold (default `warn`). See [log-api.md](log-api.md). |
 | `BEBASH_LOG_STDERR`    | Mirror log records to stderr when non-empty.               |

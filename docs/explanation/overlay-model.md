@@ -11,11 +11,17 @@ bebash separates what it ships from what you add:
 - **Payload** — the shipped base, installer-owned. Lives at `$PREFIX/lib/bebash/`
   (default `~/.local/lib/bebash/`). Re-installing **clobbers** it: it is meant to
   be replaced wholesale on upgrade. You never edit it.
-- **Overlay** — your personal layer, never touched by the installer. Lives at the
-  XDG config dir `~/.config/bebash/`. Holds your `functions/`, `lib/`, `rc.d/`,
-  a `config.bash`, and a `disabled.d/` mask directory.
+- **Overlay** — your personal layer, never touched by the installer, split by XDG
+  role. Your *code* — `functions/`, `lib/`, `rc.d/`, and standalone `commands/` —
+  lives at the XDG data dir `$BEBASH_DATA_DIR`
+  (`${BEBASH_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/bebash}`, i.e.
+  `~/.local/share/bebash/`). Only true *config* — `config.bash` and a
+  `disabled.d/` mask directory — lives at the XDG config dir `$BEBASH_CONFIG_DIR`
+  (`${BEBASH_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/bebash}`, i.e.
+  `~/.config/bebash/`). User executables are exposed via `~/.local/bin` symlinks.
 
-This separation is [ADR-0005](../decisions/ADR-0005-payload-vs-xdg-user-overlay.md).
+This separation is [ADR-0022](../decisions/ADR-0022-overlay-config-vs-data-split.md)
+(which supersedes [ADR-0005](../decisions/ADR-0005-payload-vs-xdg-user-overlay.md)).
 The point: an upgrade can throw away and recopy the whole base without ever
 risking your content, because your content isn't in the base.
 
@@ -23,7 +29,7 @@ risking your content, because your content isn't in the base.
 
 `init.bash` registers the shipped functions first, then registers your overlay
 functions **last**. In Bash, the last definition of a function name is the one
-that stays. So if you drop `~/.config/bebash/functions/gpr.bash`, it replaces the
+that stays. So if you drop `~/.local/share/bebash/functions/gpr.bash`, it replaces the
 shipped `gpr` stub with no configuration and no conflict — the same idea as
 oh-my-bash's `custom/` directory. To *remove* a shipped function instead of
 replacing it, name it in `disabled.d/` and the loader unsets it after

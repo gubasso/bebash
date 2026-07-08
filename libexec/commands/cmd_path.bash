@@ -31,9 +31,10 @@ bebash::cmd::path() {
     return $?
   }
 
-  local payload overlay log manifest completion man
+  local payload config data log manifest completion man
   payload=$BEBASH_LIB
-  overlay=$(__bebash_overlay_dir)
+  config=$(__bebash_config_dir)
+  data=$(__bebash_user_data_dir)
   log=$(__bebash_log_path)
   manifest=$(__bebash_manifest_path)
   completion=$(__bebash_completion_path)
@@ -42,7 +43,8 @@ bebash::cmd::path() {
   if ((json)); then
     printf '{'
     printf '"payload":%s,' "$(__bebash_json_string "$payload")"
-    printf '"overlay":%s,' "$(__bebash_json_string "$overlay")"
+    printf '"config":%s,' "$(__bebash_json_string "$config")"
+    printf '"data":%s,' "$(__bebash_json_string "$data")"
     printf '"log":%s,' "$(__bebash_json_string "$log")"
     printf '"manifest":%s,' "$(__bebash_json_string "$manifest")"
     printf '"completion":%s,' "$(__bebash_json_string "$completion")"
@@ -52,7 +54,8 @@ bebash::cmd::path() {
   fi
 
   printf 'payload=%s\n' "$payload"
-  printf 'overlay=%s\n' "$overlay"
+  printf 'config=%s\n' "$config"
+  printf 'data=%s\n' "$data"
   printf 'log=%s\n' "$log"
   printf 'manifest=%s\n' "$manifest"
   printf 'completion=%s\n' "$completion"

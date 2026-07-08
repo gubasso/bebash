@@ -13,15 +13,19 @@ declare -gA __BEBASH_GLOBAL=(
   [color]=auto
 )
 
-__bebash_overlay_dir() {
+__bebash_config_dir() {
   printf '%s\n' "${BEBASH_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/bebash}"
+}
+
+__bebash_user_data_dir() {
+  printf '%s\n' "${BEBASH_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/bebash}"
 }
 
 __bebash_state_dir() {
   printf '%s\n' "${XDG_STATE_HOME:-$HOME/.local/state}/bebash"
 }
 
-__bebash_data_dir() {
+__bebash_xdg_data_home() {
   printf '%s\n' "${XDG_DATA_HOME:-$HOME/.local/share}"
 }
 
@@ -30,11 +34,11 @@ __bebash_manifest_path() {
 }
 
 __bebash_completion_path() {
-  printf '%s/bash-completion/completions/bebash\n' "$(__bebash_data_dir)"
+  printf '%s/bash-completion/completions/bebash\n' "$(__bebash_xdg_data_home)"
 }
 
 __bebash_man_path() {
-  printf '%s/man/man1/bebash.1\n' "$(__bebash_data_dir)"
+  printf '%s/man/man1/bebash.1\n' "$(__bebash_xdg_data_home)"
 }
 
 __bebash_log_path() {
@@ -68,7 +72,7 @@ __bebash_command_known() {
 
 __bebash_command_desc() {
   local sub=${1-} path line desc
-  path="${BEBASH_LIB}/lib/commands/cmd_${sub}.bash"
+  path="${BEBASH_LIB}/libexec/commands/cmd_${sub}.bash"
   if [[ -r "$path" ]]; then
     while IFS= read -r line; do
       [[ "$line" == ": 'desc: "* ]] || continue

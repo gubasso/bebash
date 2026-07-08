@@ -25,17 +25,19 @@ and prints machine-readable data for scripts when *--json* is used.
 	emit an array of objects with *name*, *desc*, and *origin*.
 
 *path*
-	Print resolved paths in order: *payload*, *overlay*, *log*, *manifest*,
-	*completion*, and *man*. With *--json*, emit one object with those keys.
+	Print resolved paths in order: *payload*, *config*, *data*, *log*,
+	*manifest*, *completion*, and *man*. With *--json*, emit one object with
+	those keys.
 
 *edit* [*--new*] <function>
-	Open a function in *$EDITOR*. With *--new*, scaffold an overlay function
-	before opening it.
+	Open a function in *$EDITOR*. With *--new*, scaffold a user function under
+	*$BEBASH_DATA_DIR/functions* before opening it.
 
 *init-user*
-	Create or verify the user overlay skeleton at *$XDG_CONFIG_HOME/bebash*.
-	It creates *functions/*, *lib/*, *rc.d/*, *disabled.d/*, and
-	*config.bash* without clobbering existing files.
+	Create or verify the user overlay skeleton. It creates the config skeleton
+	(*disabled.d/* and *config.bash*) under *$XDG_CONFIG_HOME/bebash* and the
+	data skeleton (*functions/*, *lib/*, *rc.d/*, *commands/*) under
+	*$XDG_DATA_HOME/bebash*, without clobbering existing files.
 
 *version*
 	Print the installed version string from *VERSION*.
@@ -78,7 +80,11 @@ and prints machine-readable data for scripts when *--json* is used.
 	Payload root containing *init.bash*, *VERSION*, and *lib/*.
 
 *BEBASH_CONFIG_DIR*
-	Overlay root. Defaults to *$XDG_CONFIG_HOME/bebash*.
+	User config root. Defaults to *$XDG_CONFIG_HOME/bebash*.
+
+*BEBASH_DATA_DIR*
+	User code root for functions, libs, rc.d, and standalone command sources.
+	Defaults to *$XDG_DATA_HOME/bebash*.
 
 *BEBASH_LOG_LEVEL*
 	Log file threshold. Defaults to *warn*.
@@ -93,26 +99,27 @@ and prints machine-readable data for scripts when *--json* is used.
 	Disable or force color for human-facing terminal output.
 
 *XDG_CONFIG_HOME*
-	Base directory for the user overlay.
+	Base directory for the user config overlay.
 
 *XDG_STATE_HOME*
 	Base directory for logs and the install manifest.
 
 *XDG_DATA_HOME*
-	Base directory for completion and man page install targets.
+	Base directory for the user code overlay and for completion and man page
+	install targets.
 
 # FILES
 
 *$BEBASH_LIB/init.bash*
 	Shell payload entry point.
 
-$BEBASH_LIB/lib/commands/cmd_<name>.bash
+$BEBASH_LIB/libexec/commands/cmd_<name>.bash
 	CLI subcommand handlers, loaded on dispatch.
 
 *$XDG_CONFIG_HOME/bebash/config.bash*
-	User overlay config sourced by the shell payload.
+	User config sourced by the shell payload.
 
-$XDG_CONFIG_HOME/bebash/functions/<name>.bash
+$XDG_DATA_HOME/bebash/functions/<name>.bash
 	User function overrides and additions.
 
 *$XDG_STATE_HOME/bebash/bebash.log*

@@ -7,7 +7,7 @@ How to extend the `bebash` management CLI (the secondary surface —
 
 ## 1. One file per subcommand
 
-Create `lib/commands/cmd_<name>.bash`. The filename encodes the command so the
+Create `libexec/commands/cmd_<name>.bash`. The filename encodes the command so the
 loader sources it on dispatch without a lookup table. Namespace the public
 function and add a `desc:` marker:
 
@@ -25,7 +25,7 @@ bebash::cmd::path() {
 
 Add the command to the dispatch table in `lib/core.bash` so `bebash path …` routes
 to `cmd_path.bash`. Dispatch is explicit (no auto-discovery, no plugin registry):
-the loader maps `bebash <name>` → `lib/commands/cmd_<name>.bash` → `bebash::cmd::<name>`.
+the loader maps `bebash <name>` → `libexec/commands/cmd_<name>.bash` → `bebash::cmd::<name>`.
 An unknown command exits `2` (usage error).
 
 ## 3. Follow the output and exit contract
