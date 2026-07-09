@@ -20,9 +20,10 @@ The user overlay is split by XDG role: *code* lives under the data root
 | Startup modules    | `rc.d/NN-*.bash`            | `rc.d/*.bash` (added after)             |
 | Disable list       | —                                | `disabled.d/<name>` (in config root)    |
 
-For the author, the config root is the stow target of `~/.dotfiles/bebash/`;
-bebash reads code from `~/.local/share/bebash/` and config from
-`~/.config/bebash/` ([overlay model](../explanation/overlay-model.md)).
+bebash reads user code from `~/.local/share/bebash/` and user config from
+`~/.config/bebash/`, regardless of whether those directories are plain
+directories or symlinks managed by a separate dotfiles tool
+([overlay model](../explanation/overlay-model.md)).
 
 ## Load order (`init.bash`)
 
@@ -60,8 +61,8 @@ configuration. This is the same mechanic as oh-my-bash's `custom/` overlay
 ## `disabled.d/` format
 
 - One file per function to suppress; the **filename is the function name**
-  (`disabled.d/zup`). A `.bash` suffix, if present, is stripped, so `zup` and
-  `zup.bash` both mask `zup`.
+  (`disabled.d/slug`). A `.bash` suffix, if present, is stripped, so `slug` and
+  `slug.bash` both mask `slug`.
 - Step 10 runs `unset -f <name>` for each entry, removing the function (or its
   autoload stub) after all registration is done. It does not touch variables.
 - A name that matches nothing is silently ignored (masking is declarative, not an

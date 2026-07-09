@@ -25,9 +25,9 @@ touched by the installer) and is layered on top by `init.bash`.
 - Good: upgrades never destroy user content; the base stays pristine and
   greppable; user files **win** by loading last
   (see [reference/overlay-precedence.md](../reference/overlay-precedence.md)).
-- Good: for the author, the overlay is itself a Stow package
-  (`~/.dotfiles/bebash/` → `~/.config/bebash/`), so personal config stays in the
-  dotfiles repo.
+- Good: the overlay can itself be a dotfiles-managed package, so personal
+  config and code can stay in a private source tree while bebash reads only the
+  deployed XDG config/data roots.
 - Bad: two locations to reason about; the load order must be exactly right for
   overrides to take effect.
 

@@ -8,7 +8,8 @@ The repository tree and the role of each directory. Conceptual context is in
 ```text
 bebash/
 ├── bin/
-│   └── bebash                  # thin CLI shim: resolve → source core → dispatch
+│   ├── bebash                  # thin CLI shim: resolve → source core → dispatch
+│   └── dots                    # standalone command (executable); impl in lib/dots.bash
 ├── init.bash                   # framework entry point (sourced from ~/.bashrc)
 ├── lib/
 │   ├── core.bash               # bebash::main, global flags, subcommand dispatch
@@ -51,8 +52,10 @@ bebash/
 
 ## Directory roles
 
-- `bin/` — Thin CLI shim only; no logic; resolves symlinks, sources,
-  dispatches.
+- `bin/` — Executables: the `bebash` CLI shim (resolves symlinks, sources,
+  dispatches; no logic) plus standalone commands such as `dots`, whose
+  implementation lives in `lib/<name>.bash`
+  ([standalone-command lane](../guides/adding-a-standalone-command.md)).
 - `init.bash` — Framework entry point; the file `~/.bashrc` sources.
 - `lib/` — Shared machinery sourced by both the framework and the CLI.
 - `libexec/commands/` — CLI-only subcommand handlers (`bebash::cmd::*`).

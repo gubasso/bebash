@@ -22,6 +22,7 @@ source-files:
   - guides/writing-a-function.md
   - guides/creating-a-user-overlay.md
   - guides/adding-a-cli-subcommand.md
+  - guides/adding-a-standalone-command.md
   - guides/cutting-a-release.md
   - reference/project-layout.md
   - reference/module-and-loader.md

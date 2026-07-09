@@ -21,6 +21,7 @@ load [AGENTS.md](AGENTS.md) first, then read the zone that owns the change.
   [Writing a function](guides/writing-a-function.md) ·
   [Creating an overlay](guides/creating-a-user-overlay.md) ·
   [Adding a subcommand](guides/adding-a-cli-subcommand.md) ·
+  [Adding a standalone command](guides/adding-a-standalone-command.md) ·
   [Cutting a release](guides/cutting-a-release.md)
 - **reference** (Lookup): Specs index below
 - **decisions** (Why): ADR index below

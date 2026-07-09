@@ -19,7 +19,7 @@ Chosen option: **three tiers**. Tier 1 ships as-is (generic git/util tooling).
 Tier 2 ships but is parameterized (generic behavior that hardcodes the author's
 paths — e.g. `p`, the `__project_nvim` family). Tier 3 never ships
 (`suse-*`, `*-session-login`, personal project dirs, host overlays) and moves to
-the author's own `~/.dotfiles/bebash/` overlay.
+a private overlay.
 
 The generic updater framework ships as `lib/updater.bash`; concrete OS updater
 commands `pup` and `zup` are Tier 3 overlay commands.
@@ -36,5 +36,4 @@ commands `pup` and `zup` are Tier 3 overlay commands.
 
 ## Status
 
-Accepted — enacted by which files land in `lib/functions/` vs the author's
-overlay.
+Accepted — enacted by which files land in `functions/` vs a private overlay.

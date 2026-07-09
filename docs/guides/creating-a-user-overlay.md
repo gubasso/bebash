@@ -56,7 +56,7 @@ registers last, your version wins — no config needed:
 To remove rather than replace, list its name in `disabled.d/`:
 
 ```bash
-touch ~/.config/bebash/disabled.d/zup   # unsets the shipped `zup`
+touch ~/.config/bebash/disabled.d/slug   # unsets the shipped `slug`
 ```
 
 ## 5. Set config and project shortcuts
@@ -76,15 +76,16 @@ notes() { __project_nvim notes "$HOME/Notes" "$@"; }
 See [../reference/config-and-xdg.md](../reference/config-and-xdg.md) for every
 config key and its default.
 
-## 6. (Author) keep the overlay in your dotfiles
+## 6. Keep the overlay in your own dotfiles
 
 The overlay dir is a normal directory; you can also make it the deploy target of
 a Stow package so your personal setup is tracked in your dotfiles:
 
 ```text
-~/.dotfiles/bebash/  --stow-->  ~/.config/bebash/
+dotfiles-package/bebash/.config/bebash/        -> ~/.config/bebash/
+dotfiles-package/bebash/.local/share/bebash/   -> ~/.local/share/bebash/
 ```
 
-bebash only ever reads `~/.config/bebash/`; the stow step is yours. This is how
-personal Tier-3 functions stay out of the public base while remaining available
-to you ([overlay model](../explanation/overlay-model.md)).
+bebash only ever reads the XDG config and data roots; the deploy step is yours.
+This is how personal Tier-3 functions stay out of the public base while
+remaining available to you ([overlay model](../explanation/overlay-model.md)).

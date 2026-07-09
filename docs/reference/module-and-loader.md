@@ -17,7 +17,9 @@ Rules:
 - The filename **is** the public name, so the loader derives the target without a
   lookup table.
 - Sourced files carry `# shellcheck shell=bash` on line 1 (no shebang — they are
-  sourced, not executed). `bin/bebash` is the only executable and gets `#!/usr/bin/env bash`.
+  sourced, not executed). Executables in `bin/` get `#!/usr/bin/env bash`: `bin/bebash`
+  is the CLI shim, and standalone commands such as `bin/dots` are the third public lane
+  ([../guides/adding-a-standalone-command.md](../guides/adding-a-standalone-command.md)).
 - CLI functions are namespaced `bebash::cmd::<name>`; library functions use their
   bare command name; internal helpers use a `__` prefix.
 

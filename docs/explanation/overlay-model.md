@@ -39,24 +39,25 @@ You extend the same way you override: a new function file, a new `rc.d/` module,
 or config keys in `config.bash`. There is one mechanism for "mine on top of
 theirs," and it covers add, override, and disable.
 
-## The author's stow indirection
+## Optional dotfiles indirection
 
-For most users, `~/.config/bebash/` is just a directory they create and fill. For
-the author, it is the *deploy target* of a Stow package kept in their dotfiles:
+For many users, `~/.config/bebash/` and `~/.local/share/bebash/` are just
+directories they create and fill. They can also be deploy targets managed by a
+dotfiles tool:
 
 ```text
-~/.dotfiles/bebash/        # tracked in the dotfiles repo (the real source)
-      │  stow bebash
-      ▼
-~/.config/bebash/          # what bebash reads at runtime (symlinks)
+dotfiles package source
+      | deploy
+      v
+~/.config/bebash/          # config read at runtime
+~/.local/share/bebash/     # code read at runtime
 ```
 
-So "user config" means `~/.config/bebash/` at runtime, populated from
-`~/.dotfiles/bebash/` at deploy time. Nothing in bebash knows or cares about the
-stow step — it only ever reads the XDG overlay dir. This is how the author keeps
-their Tier-3 personal functions
+So "user overlay" means the XDG config and data roots at runtime. Nothing in
+bebash knows or cares about the deploy step. This is how a user keeps Tier-3
+personal functions
 ([ADR-0011](../decisions/ADR-0011-privacy-strip-three-tiers.md)) out of the public
-base while still using them: they live in the dotfiles overlay, not the shipped
+base while still using them: they live in a private overlay, not the shipped
 payload.
 
 ## Consequences you can rely on

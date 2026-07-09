@@ -11,6 +11,7 @@ The exact behavior of `install.sh` / `uninstall.sh`, the manifest, and the
 | ---------------- | ------------------------------------------------------ |
 | Payload          | `$PREFIX/lib/bebash/` (default `~/.local/lib/bebash`)  |
 | CLI symlink      | `$PREFIX/bin/bebash` -> payload `bin/bebash`           |
+| `dots` symlink   | `$PREFIX/bin/dots` -> payload `bin/dots`               |
 | Completion       | `$XDG_DATA_HOME/bash-completion/completions/bebash`    |
 | Man page         | `$XDG_DATA_HOME/man/man1/bebash.1`                     |
 | Manifest + state | `$XDG_STATE_HOME/bebash/`                              |
@@ -25,16 +26,19 @@ Root install (`EUID 0`) uses system paths (`$PREFIX/lib`, `/usr/local/bin`,
    `app_root=$PREFIX/lib/bebash`, `state_dir=$XDG_STATE_HOME/bebash`.
 3. **Open a temp manifest** under `state_dir` with an `EXIT` trap to clean it.
 4. **Hard-clear the previous payload** (`app_root/bin`, `app_root/lib`,
-   `app_root/init.bash`, `app_root/VERSION`) so no stale files survive an upgrade.
-   The **overlay is never touched.**
-5. **Copy payload** — `bin/`, `lib/`, `init.bash`, `VERSION`, recording each
-   written path into the manifest. `VERSION` is a committed repo file — the
+   `app_root/libexec`, `app_root/functions`, `app_root/rc.d`,
+   `app_root/templates`, `app_root/init.bash`, `app_root/VERSION`) so no stale
+   files survive an upgrade. The **overlay is never touched.**
+5. **Copy payload** — `bin/`, `lib/`, `libexec/`, `functions/`, `rc.d/`,
+   `templates/`, `init.bash`, `VERSION`, recording each written path into the
+   manifest. `VERSION` is a committed repo file — the
    authoring source of truth — copied into `app_root/VERSION` like any other
    payload file
    ([ADR-0018](../decisions/ADR-0018-committed-version-is-authoring-sot.md); the
    signed `v*` tag mirrors it).
-6. **Symlink the CLI** — `ln -sfn "$app_root/bin/bebash" "$PREFIX/bin/bebash"`;
-   record it.
+6. **Symlink the CLI and `dots`** — `ln -sfn "$app_root/bin/bebash"
+   "$PREFIX/bin/bebash"` and `ln -sfn "$app_root/bin/dots" "$PREFIX/bin/dots"`;
+   record both.
 7. **Install completion + man page** to their XDG locations (man built from
    `man/bebash.1.scd` via scdoc if a prebuilt `.1` is absent; skipped with a
    warning if scdoc is missing); record them.
@@ -56,9 +60,11 @@ Example (user install):
 ```text
 /home/me/.local/lib/bebash/VERSION
 /home/me/.local/lib/bebash/bin/bebash
+/home/me/.local/lib/bebash/bin/dots
 /home/me/.local/lib/bebash/init.bash
 /home/me/.local/lib/bebash/lib/ui.bash
 /home/me/.local/bin/bebash
+/home/me/.local/bin/dots
 /home/me/.local/share/bash-completion/completions/bebash
 /home/me/.local/share/man/man1/bebash.1
 ```
@@ -70,6 +76,7 @@ prune or uninstall — a guard against removing anything outside bebash's own tr
 | --------------------------------------------------- | ---------------- |
 | `$PREFIX/lib/bebash/`                               | the payload      |
 | `$PREFIX/bin/bebash`                                | the CLI symlink  |
+| `$PREFIX/bin/dots`                                  | the `dots` symlink |
 | `$XDG_DATA_HOME/bash-completion/completions/bebash` | completion       |
 | `$XDG_DATA_HOME/man/man1/bebash.1`                  | man page         |
 | `$XDG_STATE_HOME/bebash/`                           | manifest + state |

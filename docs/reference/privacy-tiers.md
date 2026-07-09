@@ -11,7 +11,7 @@ which stay in the author's overlay. Decision:
 | ---- | ------------------------------------------------ | --------------------------------- |
 | 1    | Generic tooling, no personal data → ship as-is.  | `functions/`                  |
 | 2    | Generic behavior, hardcodes author's layout → ship the mechanism, drive targets from config. | `functions/` + `config.bash` defaults |
-| 3    | Personal/company/private → never ships.          | author's `~/.dotfiles/bebash/` overlay |
+| 3    | Personal/company/private → never ships.          | user's private overlay                  |
 
 ## Tier 1 — ships as-is
 
@@ -43,8 +43,8 @@ user config, so only the pattern ships publicly.
 | `zup`                          | openSUSE OS updater; overlay command using `lib/updater.bash` |
 | `hosts/*.bash`                 | per-machine personal overlays                  |
 
-These move to the author's `~/.dotfiles/bebash/` overlay, deployed the same way
-any user layers personal code ([overlay model](../explanation/overlay-model.md)).
+These move to a private overlay, deployed the same way any user layers personal
+code ([overlay model](../explanation/overlay-model.md)).
 
 ## Shipping rule
 

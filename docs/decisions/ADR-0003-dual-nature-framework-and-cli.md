@@ -24,8 +24,9 @@ explicitly-invoked tool for management only.
 ## Consequences
 
 - Good: interactive startup stays lean; management logic loads only when the CLI
-  runs. Clear surfaces: `lib/functions/` for the library, `lib/commands/` for the
-  CLI (see [reference/module-and-loader.md](../reference/module-and-loader.md)).
+  runs. Clear surfaces: `functions/` for the library,
+  `libexec/commands/` for the CLI (see
+  [reference/module-and-loader.md](../reference/module-and-loader.md)).
 - Good: the CLI can be scripted and tested independently of a login shell.
 - Bad: two entry points to document and keep consistent (`init.bash` and
   `bin/bebash`); shared helpers must serve both.
@@ -33,5 +34,5 @@ explicitly-invoked tool for management only.
 ## Status
 
 Accepted — enacted by `init.bash` (framework) and `bin/bebash` +
-`lib/commands/cmd_*.bash` (CLI). Subcommand set in
+`libexec/commands/cmd_*.bash` (CLI). Subcommand set in
 [reference/cli-conventions.md](../reference/cli-conventions.md).

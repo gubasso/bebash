@@ -53,6 +53,11 @@ tool via `__ui_err`, returns `1` if any is absent, `0` if all present). Use bare
 stays lazy (returns `69`/EX_UNAVAILABLE if the lib is unregistered —
 [module-and-loader.md](module-and-loader.md#__bebash_require_lib-name)).
 
+Use `__is_graphical` when a command needs to know whether a graphical session is
+available. Its contract is exactly
+`[[ -n ${DISPLAY:-} || -n ${WAYLAND_DISPLAY:-} ]]`; it does not imply that a
+specific browser, opener, or display server command exists.
+
 ## Exit codes
 
 `0` ok, `1` operational failure, `2` usage error; richer CLI failures use sysexits
