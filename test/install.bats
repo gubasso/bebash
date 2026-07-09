@@ -45,6 +45,7 @@ run_uninstall() {
   assert_file_not_exists "$PREFIX/lib/bebash/lib/rc.d"
   assert_file_not_exists "$PREFIX/lib/bebash/lib/templates"
   assert_symlink_to "$PREFIX/lib/bebash/bin/bebash" "$PREFIX/bin/bebash"
+  assert_symlink_to "$PREFIX/lib/bebash/bin/dots" "$PREFIX/bin/dots"
   assert_file_exists "$XDG_DATA_HOME/bash-completion/completions/bebash"
   if [[ -e "$REPO_ROOT/man/bebash.1" ]] || command -v scdoc >/dev/null 2>&1; then
     assert_file_exists "$XDG_DATA_HOME/man/man1/bebash.1"
@@ -65,6 +66,7 @@ run_uninstall() {
     case "$path" in
       "$PREFIX/lib/bebash"|"$PREFIX/lib/bebash"/*) ;;
       "$PREFIX/bin/bebash") ;;
+      "$PREFIX/bin/dots") ;;
       "$XDG_DATA_HOME/bash-completion/completions/bebash") ;;
       "$XDG_DATA_HOME/man/man1/bebash.1") ;;
       "$XDG_STATE_HOME/bebash"|"$XDG_STATE_HOME/bebash"/*) ;;

@@ -78,6 +78,10 @@ __bebash_install_mkdir_parent "$BEBASH_INSTALL_BIN_LINK"
 ln -sfn -- "$BEBASH_INSTALL_APP_ROOT/bin/bebash" "$BEBASH_INSTALL_BIN_LINK"
 __bebash_install_record "$BEBASH_INSTALL_BIN_LINK" "$tmp_manifest"
 
+__bebash_install_mkdir_parent "$BEBASH_INSTALL_DOTS_LINK"
+ln -sfn -- "$BEBASH_INSTALL_APP_ROOT/bin/dots" "$BEBASH_INSTALL_DOTS_LINK"
+__bebash_install_record "$BEBASH_INSTALL_DOTS_LINK" "$tmp_manifest"
+
 __bebash_install_mkdir_parent "$BEBASH_INSTALL_COMPLETION"
 cp -- "$repo_root/completions/bebash.bash" "$BEBASH_INSTALL_COMPLETION"
 __bebash_install_record "$BEBASH_INSTALL_COMPLETION" "$tmp_manifest"
@@ -105,5 +109,6 @@ trap - EXIT INT TERM
 printf 'bebash installed\n' >&2
 printf '  payload: %s\n' "$BEBASH_INSTALL_APP_ROOT" >&2
 printf '  cli: %s\n' "$BEBASH_INSTALL_BIN_LINK" >&2
+printf '  dots: %s\n' "$BEBASH_INSTALL_DOTS_LINK" >&2
 printf '  manifest: %s\n' "$BEBASH_INSTALL_MANIFEST" >&2
 printf 'Open a new interactive shell or source %s.\n' "$BEBASH_INSTALL_BASHRC" >&2
