@@ -25,10 +25,7 @@ logic in `lib/<name>.bash` when the command has enough behavior to test or reuse
 The executable resolves `BEBASH_LIB`, sources eager output/helper libraries, then
 sources its command library.
 
-The public reference embed is `dots`: `bin/dots` is the executable entry point
-and `lib/dots.bash` holds the implementation. The dotfiles repository is not
-hardcoded; callers pass `--dir`/`--dotfiles-dir` or set `DOTFILES` or
-`BEBASH_DOTFILES_DIR`.
+The former in-repo reference command, `dots`, has moved to its own standalone project. New executable tools that are useful outside bebash should generally live outside this framework unless they deliberately need bebash's headless loader.
 
 ## Overlay exposure
 

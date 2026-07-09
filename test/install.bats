@@ -43,12 +43,10 @@ run_uninstall() {
   assert_file_not_exists "$PREFIX/lib/bebash/lib/functions"
   assert_file_not_exists "$PREFIX/lib/bebash/lib/rc.d"
   assert_file_not_exists "$PREFIX/lib/bebash/lib/templates"
-  # CLIs are installed as real executables in $PREFIX/bin (not symlinks), and
+  # The CLI is installed as a real executable in $PREFIX/bin (not a symlink), and
   # the payload no longer carries a bin/ subdir.
   assert_file_executable "$PREFIX/bin/bebash"
-  assert_file_executable "$PREFIX/bin/dots"
   [[ ! -L "$PREFIX/bin/bebash" ]]
-  [[ ! -L "$PREFIX/bin/dots" ]]
   assert_dir_not_exists "$PREFIX/lib/bebash/bin"
   assert_file_exists "$XDG_DATA_HOME/bash-completion/completions/bebash"
   if [[ -e "$REPO_ROOT/man/bebash.1" ]] || command -v scdoc >/dev/null 2>&1; then
@@ -63,14 +61,11 @@ run_uninstall() {
   # cp must not try to write through it.
   mkdir -p "$PREFIX/bin"
   ln -s "$PREFIX/lib/bebash/bin/bebash" "$PREFIX/bin/bebash"
-  ln -s "$PREFIX/lib/bebash/bin/dots" "$PREFIX/bin/dots"
 
   run_install
   assert_success
   assert_file_executable "$PREFIX/bin/bebash"
-  assert_file_executable "$PREFIX/bin/dots"
   [[ ! -L "$PREFIX/bin/bebash" ]]
-  [[ ! -L "$PREFIX/bin/dots" ]]
 }
 
 @test "installed CLI self-locates its library root with BEBASH_LIB unset" {
@@ -82,9 +77,6 @@ run_uninstall() {
   run env -u BEBASH_LIB "$PREFIX/bin/bebash" path
   assert_success
   assert_output --partial "payload=$PREFIX/lib/bebash"
-
-  run env -u BEBASH_LIB "$PREFIX/bin/dots" --version
-  assert_success
 }
 
 @test "repo-tree CLI self-locates its library root with BEBASH_LIB unset" {
@@ -102,16 +94,15 @@ run_uninstall() {
   manifest="$XDG_STATE_HOME/bebash/install-manifest"
   diff -u "$manifest" <(LC_ALL=C sort -u "$manifest")
   while IFS= read -r path; do
-    [[ "$path" == /* ]]
-    [[ "$path" != "$HOME/.bashrc" ]]
-    [[ "$path" != "$HOME/.bashrc.bebash.bak" ]]
+    [[ $path == /* ]]
+    [[ $path != "$HOME/.bashrc" ]]
+    [[ $path != "$HOME/.bashrc.bebash.bak" ]]
     case "$path" in
-      "$PREFIX/lib/bebash"|"$PREFIX/lib/bebash"/*) ;;
+      "$PREFIX/lib/bebash" | "$PREFIX/lib/bebash"/*) ;;
       "$PREFIX/bin/bebash") ;;
-      "$PREFIX/bin/dots") ;;
       "$XDG_DATA_HOME/bash-completion/completions/bebash") ;;
       "$XDG_DATA_HOME/man/man1/bebash.1") ;;
-      "$XDG_STATE_HOME/bebash"|"$XDG_STATE_HOME/bebash"/*) ;;
+      "$XDG_STATE_HOME/bebash" | "$XDG_STATE_HOME/bebash"/*) ;;
       *) fail "manifest path outside whitelist: $path" ;;
     esac
   done <"$manifest"
@@ -218,7 +209,7 @@ run_uninstall() {
   assert_success
 
   for path in "${installed[@]}"; do
-    [[ ! -e "$path" ]]
+    [[ ! -e $path ]]
   done
   assert_file_not_exists "$XDG_STATE_HOME/bebash/install-manifest"
   assert_file_not_contains "$HOME/.bashrc" '# >>> bebash >>>'

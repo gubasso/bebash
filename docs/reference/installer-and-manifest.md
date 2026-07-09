@@ -11,7 +11,6 @@ The exact behavior of `install.sh` / `uninstall.sh`, the manifest, and the
 | ---------------- | ------------------------------------------------------ |
 | Payload          | `$PREFIX/lib/bebash/` (default `~/.local/lib/bebash`)  |
 | `bebash` CLI     | `$PREFIX/bin/bebash` (real executable)                 |
-| `dots` CLI       | `$PREFIX/bin/dots` (real executable)                   |
 | Completion       | `$XDG_DATA_HOME/bash-completion/completions/bebash`    |
 | Man page         | `$XDG_DATA_HOME/man/man1/bebash.1`                     |
 | Manifest + state | `$XDG_STATE_HOME/bebash/`                              |
@@ -37,9 +36,8 @@ Root install (`EUID 0`) uses system paths (`$PREFIX/lib`, `/usr/local/bin`,
    into `app_root/VERSION` like any other payload file
    ([ADR-0018](../decisions/ADR-0018-committed-version-is-authoring-sot.md); the
    signed `v*` tag mirrors it).
-6. **Install the CLIs as real executables** — `cp "$repo_root/bin/bebash"
-   "$PREFIX/bin/bebash"` and `cp "$repo_root/bin/dots" "$PREFIX/bin/dots"` (mode
-   `0755`), recording both. Each self-locates its library root at
+6. **Install the CLI as a real executable** — `cp "$repo_root/bin/bebash"
+   "$PREFIX/bin/bebash"` (mode `0755`), recording it. It self-locates its library root at
    `$bindir/../lib/bebash`, so no symlink hop into the payload is needed
    ([ADR-0025](../decisions/ADR-0025-real-fhs-bin-with-dual-layout-self-location.md)).
 7. **Install completion + man page** to their XDG locations (man built from
@@ -66,7 +64,6 @@ Example (user install):
 /home/me/.local/lib/bebash/init.bash
 /home/me/.local/lib/bebash/lib/ui.bash
 /home/me/.local/bin/bebash
-/home/me/.local/bin/dots
 /home/me/.local/share/bash-completion/completions/bebash
 /home/me/.local/share/man/man1/bebash.1
 ```
@@ -78,7 +75,6 @@ prune or uninstall — a guard against removing anything outside bebash's own tr
 | --------------------------------------------------- | ---------------- |
 | `$PREFIX/lib/bebash/`                               | the payload      |
 | `$PREFIX/bin/bebash`                                | the `bebash` CLI  |
-| `$PREFIX/bin/dots`                                  | the `dots` CLI    |
 | `$XDG_DATA_HOME/bash-completion/completions/bebash` | completion       |
 | `$XDG_DATA_HOME/man/man1/bebash.1`                  | man page         |
 | `$XDG_STATE_HOME/bebash/`                           | manifest + state |

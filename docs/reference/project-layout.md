@@ -8,8 +8,7 @@ The repository tree and the role of each directory. Conceptual context is in
 ```text
 bebash/
 ├── bin/
-│   ├── bebash                  # thin CLI shim: resolve → source core → dispatch
-│   └── dots                    # standalone command (executable); impl in lib/dots.bash
+│   └── bebash                  # thin CLI shim: resolve → source core → dispatch
 ├── init.bash                   # framework entry point (sourced from ~/.bashrc)
 ├── lib/
 │   ├── core.bash               # bebash::main, global flags, subcommand dispatch
@@ -52,12 +51,10 @@ bebash/
 
 ## Directory roles
 
-- `bin/` — Executables: the `bebash` CLI shim (self-locates its library root,
-  sources, dispatches; no logic) plus standalone commands such as `dots`, whose
-  implementation lives in `lib/<name>.bash`
-  ([standalone-command lane](../guides/adding-a-standalone-command.md)). On
-  install these are copied as real files into `$PREFIX/bin`; the payload keeps no
-  `bin/` subdir ([ADR-0025](../decisions/ADR-0025-real-fhs-bin-with-dual-layout-self-location.md)).
+- `bin/` — Executables: the `bebash` CLI shim self-locates its library root,
+  sources, and dispatches; it contains no command logic. On install it is copied
+  as a real file into `$PREFIX/bin`; the payload keeps no `bin/` subdir
+  ([ADR-0025](../decisions/ADR-0025-real-fhs-bin-with-dual-layout-self-location.md)).
 - `init.bash` — Framework entry point; the file `~/.bashrc` sources.
 - `init-headless.bash` — Non-interactive loader a standalone command sources to
   reach the framework without the interactive `rc.d` layer
@@ -97,7 +94,7 @@ Shared helpers live directly in `lib/`. Keeping the two apart is
 
 The `lib/`, `libexec/`, `functions/`, `rc.d/`, and `templates/` trees plus
 `init.bash`, `init-headless.bash`, and `VERSION` are copied into the payload at
-`$PREFIX/lib/bebash/`; the `bin/` scripts are installed as real executables in
+`$PREFIX/lib/bebash/`; the `bin/bebash` script is installed as a real executable in
 `$PREFIX/bin` (not into the payload). Completion and man files are installed
 under XDG data targets, not copied into the payload.
 `VERSION` is a committed file — the authoring source of truth

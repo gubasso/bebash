@@ -4,7 +4,7 @@
 
 `just install` copied the whole payload — including a `bin/` subdir — to
 `$PREFIX/lib/bebash/` and then created absolute symlinks
-`$PREFIX/bin/{bebash,dots}` → `$PREFIX/lib/bebash/bin/{bebash,dots}`. That is a
+`$PREFIX/bin/bebash` through `$PREFIX/lib/bebash/bin/bebash`. That is a
 non-standard hop for installed executables, couples the on-PATH command to a
 payload-internal path, and breaks if the payload moves.
 
@@ -19,7 +19,7 @@ payload-internal path, and breaks if the payload moves.
 
 Chosen option: **real executables in `$PREFIX/bin`** — the standard way a Bash
 app installs. Libraries stay at `$PREFIX/lib/bebash`; completions/man stay under
-`$PREFIX/share`; the payload no longer contains `bin/`. Each CLI resolves its
+`$PREFIX/share`; the payload no longer contains `bin/`. The CLI resolves its
 library root by probing, in order, `$bindir/../lib/bebash` (installed FHS) then
 `$bindir/..` (repo working tree / old payload-bin layout), using `lib/core.bash`
 as the shared sentinel. No install-time stamping: the same script works from the
@@ -40,5 +40,4 @@ Accepted — supersedes the "payload contains `bin/`" detail of
 contract of
 [ADR-0019](ADR-0019-payload-init-shell-wiring-and-bebash-lib-root.md)
 (`BEBASH_LIB` still means the payload root; that root just no longer holds
-`bin/`). Implemented by `bin/bebash`, `bin/dots`, `install.sh`, and
-`install-common.sh`.
+`bin/`). Implemented by `bin/bebash`, `install.sh`, and `install-common.sh`. This ADR formerly also covered `dots`; that command was extracted to its own standalone project, so this decision now applies only to the in-repo `bebash` CLI.

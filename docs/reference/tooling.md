@@ -5,7 +5,7 @@ through pre-commit; never invoke linters directly.
 
 ## Strict mode
 
-Executable scripts (`bin/bebash`, `bin/dots`, `install*.sh`) open with:
+Executable scripts (`bin/bebash`, `install*.sh`) open with:
 
 ```bash
 set -euo pipefail

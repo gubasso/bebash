@@ -64,6 +64,8 @@ source-files:
   - decisions/ADR-0021-payload-fhs-role-split.md
   - decisions/ADR-0022-overlay-config-vs-data-split.md
   - decisions/ADR-0023-standalone-command-lane-and-naming.md
+  - decisions/ADR-0024-bebash-owns-commands-path-lane.md
+  - decisions/ADR-0025-real-fhs-bin-with-dual-layout-self-location.md
 token-estimate: 24000
 ---
 
@@ -95,7 +97,7 @@ directory. These docs are the design + spec that drive the implementation.
   layout, module/loader, `ui`/`log` APIs, output channels, exit codes, config +
   XDG, CLI conventions, installer + manifest, overlay precedence, release
   workflow, privacy tiers, testing, tooling, conventions, inspiration projects.
-- **decisions/** — 23 lean ADRs (`ADR-NNNN-slug.md`, ≤350 words, never deleted).
+- **decisions/** — 25 lean ADRs (`ADR-NNNN-slug.md`, ≤350 words, never deleted).
 
 ## Source map
 

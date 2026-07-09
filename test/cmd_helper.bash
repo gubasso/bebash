@@ -6,7 +6,7 @@ cmd_setup() {
   # Hermeticity: a developer with bebash installed exports these overrides from
   # their login shell, and `nix develop`/pre-commit inherit them. Clear them so
   # every path derives from the test's XDG_* dirs, not the host install.
-  unset BEBASH_CONFIG_DIR BEBASH_DATA_DIR BEBASH_DOTFILES_DIR \
+  unset BEBASH_CONFIG_DIR BEBASH_DATA_DIR \
     BEBASH_LOG_FILE BEBASH_LOG_LEVEL BEBASH_LOG_STDERR
   export BEBASH_LIB="$BATS_TEST_DIRNAME/.."
   export PATH="$BEBASH_LIB/bin:$PATH"

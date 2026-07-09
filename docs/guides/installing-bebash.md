@@ -23,8 +23,8 @@ just install
 `just install` delegates to `install.sh`, which:
 
 1. copies the payload to `$PREFIX/lib/bebash/` (default `~/.local/lib/bebash/`);
-2. installs the `bebash` and `dots` CLIs as real executables in `$PREFIX/bin`
-   (each self-locates its library root — no symlink into the payload);
+2. installs the `bebash` CLI as a real executable in `$PREFIX/bin`
+   (it self-locates its library root — no symlink into the payload);
 3. installs completion and the man page to their XDG locations;
 4. records every written path in a manifest under `$XDG_STATE_HOME/bebash/`;
 5. wires your `~/.bashrc` (next section).
@@ -82,3 +82,5 @@ dirs, and strips the `.bashrc` marker block. Your overlay at `~/.config/bebash/`
 is left untouched. Run it with the same `PREFIX`/`XDG_*` you installed with — the
 uninstaller refuses to run if the manifest paths don't match, to avoid orphaning
 files.
+
+`dots` is now maintained as a standalone project for dotfiles management; bebash no longer installs it.
