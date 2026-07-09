@@ -131,7 +131,7 @@ __ln_clean_find_broken_links() {
 __ln_clean_collect_links() {
   local __out_name=$1 depth=$2
   shift 2
-  local -n __out=$__out_name
+  local -n __out="$__out_name"
   __out=()
   local link
   while IFS= read -r -d '' link; do

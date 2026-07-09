@@ -17,6 +17,13 @@ setup() {
   [ "$PATH" = "$dir:/usr/bin" ]
 }
 
+@test "__is_graphical follows DISPLAY/WAYLAND_DISPLAY" {
+  DISPLAY=":0" WAYLAND_DISPLAY="" __is_graphical
+  DISPLAY="" WAYLAND_DISPLAY="wayland-0" __is_graphical
+  run env -u DISPLAY -u WAYLAND_DISPLAY bash -c "source lib/ui.bash; source lib/helpers.bash; __is_graphical"
+  [ "$status" -eq 1 ]
+}
+
 @test "__cached_init rebuilds when binary is newer" {
   local bindir marker
   bindir="$(mktemp -d)"

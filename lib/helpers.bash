@@ -39,6 +39,10 @@ __is_tty() {
   [[ -z "${DISPLAY:-}" && -z "${WAYLAND_DISPLAY:-}" && "${XDG_SESSION_TYPE:-}" == tty ]]
 }
 
+__is_graphical() {
+  [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]
+}
+
 __path_prepend() {
   local dir=${1:-}
   [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"

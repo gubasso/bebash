@@ -184,7 +184,7 @@ __dots_visit_dependency() {
   # the nameref type is unresolvable here, so the string keys are misread as
   # arithmetic (SC2004). The $ is required for associative-array indexing.
   # shellcheck disable=SC2004
-  local -n visited_ref=$4 dep_of_ref=$5 requested_ref=$6 result_ref=$7 path_ref=$8
+  local -n visited_ref="$4" dep_of_ref="$5" requested_ref="$6" result_ref="$7" path_ref="$8"
 
   case "${visited_ref[$pkg]:-0}" in
   2)
@@ -637,8 +637,8 @@ __dots_validate_packages_or_die() {
 }
 
 __dots_parse_args() {
-  local -n __dots_packages_ref=$1
-  local -n __dots_dir_ref=$2
+  local -n __dots_packages_ref="$1"
+  local -n __dots_dir_ref="$2"
   shift 2
   while (($#)); do
     case "$1" in
