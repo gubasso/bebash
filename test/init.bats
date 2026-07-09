@@ -68,3 +68,51 @@ EOS
   assert_output --partial old-fn-ignored
   assert_output --partial old-rc-ignored
 }
+
+@test "commands-path rc.d prepends the bebash commands dir when present" {
+  local data
+  data="$(mktemp -d)"
+  mkdir -p "$data/commands"
+
+  run bash -c "export BEBASH_DATA_DIR='$data'; PATH='/usr/bin:/bin'; source lib/log.bash; source lib/ui.bash; source lib/helpers.bash; source rc.d/15-commands-path.bash; printf '%s\n' \"\$PATH\""
+  assert_success
+  assert_output --partial "$data/commands:"
+}
+
+@test "commands-path rc.d no-ops when the commands dir is absent" {
+  local data
+  data="$(mktemp -d)" # no commands/ subdir
+
+  run bash -c "export BEBASH_DATA_DIR='$data'; PATH='/usr/bin:/bin'; source lib/log.bash; source lib/ui.bash; source lib/helpers.bash; source rc.d/15-commands-path.bash; printf '%s\n' \"\$PATH\""
+  assert_success
+  refute_output --partial "$data/commands"
+}
+
+@test "init-headless self-locates, autoloads functions, loads eager libs, and skips rc.d" {
+  local payload config data
+  payload="$(mktemp -d)"
+  config="$(mktemp -d)"
+  data="$(mktemp -d)"
+  mkdir -p "$payload/functions" "$payload/rc.d" "$payload/lib" "$data/functions"
+  cp init-headless.bash "$payload/init-headless.bash"
+  cp lib/log.bash lib/ui.bash lib/helpers.bash lib/autoload.bash "$payload/lib/"
+  cat >"$payload/functions/hello.bash" <<'EOS'
+# shellcheck shell=bash
+: 'desc: hello'
+hello() { printf 'hello-fn\n'; }
+EOS
+  # An rc.d module that would announce itself if headless wrongly sourced rc.d.
+  cat >"$payload/rc.d/00-sideeffect.bash" <<'EOS'
+# shellcheck shell=bash
+: 'desc: sideeffect'
+printf 'rc-ran\n'
+EOS
+
+  run bash -c "set -euo pipefail; unset BEBASH_LIB; BEBASH_CONFIG_DIR='$config' BEBASH_DATA_DIR='$data' source '$payload/init-headless.bash'; printf 'lib=%s\n' \"\$BEBASH_LIB\"; hello; declare -F __ui_err >/dev/null && printf 'ui-loaded\n'; declare -F __require_verbose >/dev/null && printf 'helpers-loaded\n'"
+  assert_success
+  assert_output --partial "lib=$payload"
+  assert_output --partial hello-fn
+  assert_output --partial ui-loaded
+  assert_output --partial helpers-loaded
+  refute_output --partial rc-ran
+}

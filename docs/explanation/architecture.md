@@ -25,7 +25,7 @@ and shared machinery in `lib/` (helpers, ui, log, loader, autoload registry).
 ## The install picture
 
 `just install` copies an immutable **payload** to `$PREFIX/lib/bebash/` and
-symlinks the CLI onto `PATH`. Your personal additions live in a separate
+installs the CLIs as real executables in `$PREFIX/bin`. Your personal additions live in a separate
 **overlay**, split by XDG role — code at `~/.local/share/bebash/`
 (`$BEBASH_DATA_DIR`), config at `~/.config/bebash/` (`$BEBASH_CONFIG_DIR`) — that
 the installer never touches. The two
@@ -74,8 +74,9 @@ first use. That is what keeps startup sharp regardless of how much ships — see
 
 ## The CLI path
 
-`bin/bebash` is a thin shim: resolve its own location through symlinks, source
-the shared core, then dispatch to `libexec/commands/cmd_<name>.bash`, which is sourced
+`bin/bebash` is a thin shim: self-locate its library root (probing the installed
+FHS layout then the repo tree), source the shared core, then dispatch to
+`libexec/commands/cmd_<name>.bash`, which is sourced
 only when that subcommand runs. The framework and the CLI thus share helpers but
 never load each other's bulk. Conventions for the CLI surface are in
 [../reference/cli-conventions.md](../reference/cli-conventions.md).

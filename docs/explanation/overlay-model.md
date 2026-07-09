@@ -18,7 +18,11 @@ bebash separates what it ships from what you add:
   `~/.local/share/bebash/`). Only true *config* — `config.bash` and a
   `disabled.d/` mask directory — lives at the XDG config dir `$BEBASH_CONFIG_DIR`
   (`${BEBASH_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/bebash}`, i.e.
-  `~/.config/bebash/`). User executables are exposed via `~/.local/bin` symlinks.
+  `~/.config/bebash/`). Standalone commands live in
+  `$BEBASH_DATA_DIR/commands` and bebash puts that dir on `PATH` itself at shell
+  init (not via `~/.local/bin` symlinks); a command reaches the framework by
+  sourcing `$BEBASH_LIB/init-headless.bash`
+  ([ADR-0024](../decisions/ADR-0024-bebash-owns-commands-path-lane.md)).
 
 This separation is [ADR-0022](../decisions/ADR-0022-overlay-config-vs-data-split.md)
 (which supersedes [ADR-0005](../decisions/ADR-0005-payload-vs-xdg-user-overlay.md)).

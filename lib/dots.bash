@@ -32,7 +32,7 @@ __dots_err() { __ui_err "dots: $*"; }
 __dots_warn() { __ui_warn "dots: $*"; }
 __dots_log() { ((__dots_quiet == 0)) && __ui_info "$*" || true; }
 __dots_log_verbose() { ((__dots_quiet == 0 && __dots_verbose >= 1)) && __ui_hint "$*" || true; }
-__dots_log_debug() { ((__dots_quiet == 0 && __dots_verbose >= 2)) && __log_debug "dots: $*"; }
+__dots_log_debug() { ((__dots_quiet == 0 && __dots_verbose >= 2)) && __log_debug "dots: $*" || true; }
 __dots_log_success() { ((__dots_quiet == 0)) && __ui_ok "$*" || true; }
 
 __dots_usage() {
@@ -122,7 +122,7 @@ __dots_run_hook() {
 
 __dots_run_hooks_for_package() {
   local package=$1 hook_name=$2 target_dir=$3
-  __dots_hook_exists "$package" "$hook_name" || return 0
+  # __dots_run_hook already no-ops (returns 0) when the hook is absent/not -x.
   __dots_run_hook "$package" "$hook_name" "$target_dir"
 }
 
@@ -178,12 +178,14 @@ __dots_validate_package() {
   }
 }
 
+# The five *_ref params are namerefs onto the caller's associative/indexed
+# arrays. shellcheck cannot resolve a nameref's type, so it reads the
+# associative-array indices (visited_ref[$pkg] etc.) as arithmetic and misfires
+# SC2004 — but the $ is required for string-keyed indexing (a bareword key would
+# silently write to the literal key "pkg"). Disable SC2004 for the function.
+# shellcheck disable=SC2004
 __dots_visit_dependency() {
   local permissive=$1 pkg=$2 requester=${3:-}
-  # visited_ref/dep_of_ref index into caller associative arrays via namerefs;
-  # the nameref type is unresolvable here, so the string keys are misread as
-  # arithmetic (SC2004). The $ is required for associative-array indexing.
-  # shellcheck disable=SC2004
   local -n visited_ref="$4" dep_of_ref="$5" requested_ref="$6" result_ref="$7" path_ref="$8"
 
   case "${visited_ref[$pkg]:-0}" in
@@ -196,11 +198,11 @@ __dots_visit_dependency() {
     ;;
   esac
 
-  visited_ref[pkg]=1
+  visited_ref[$pkg]=1
   path_ref+=("$pkg")
 
   if [[ -n "$requester" && -z "${dep_of_ref[$pkg]:-}" && -z "${requested_ref[$pkg]:-}" ]]; then
-    dep_of_ref[pkg]=$requester
+    dep_of_ref[$pkg]=$requester
   fi
 
   if ! __dots_package_exists "$pkg"; then
@@ -211,7 +213,7 @@ __dots_visit_dependency() {
         __DOTS_SKIPPED_DEPS[$pkg]="${__DOTS_SKIPPED_DEPS[$pkg]:+${__DOTS_SKIPPED_DEPS[$pkg]}, }$requester"
       fi
       unset 'path_ref[-1]'
-      visited_ref[pkg]=2
+      visited_ref[$pkg]=2
       return 0
     fi
     __dots_err "dependency '$pkg' not found in $DOTFILES"
@@ -221,11 +223,11 @@ __dots_visit_dependency() {
   local dep
   while IFS= read -r dep; do
     [[ -n "$dep" ]] || continue
-    __dots_visit_dependency "$permissive" "$dep" "$pkg" visited_ref dep_of_ref requested_ref result_ref path_ref || return 1
+    __dots_visit_dependency "$permissive" "$dep" "$pkg" "$4" "$5" "$6" "$7" "$8" || return 1
   done < <(__dots_get_dependencies "$pkg")
 
   unset 'path_ref[-1]'
-  visited_ref[pkg]=2
+  visited_ref[$pkg]=2
   result_ref+=("$pkg")
 }
 
@@ -312,9 +314,13 @@ __dots_scan_package_files() {
   done < <(command find "$pkg_dir" \( -type f -o -type l \) -print0 2>/dev/null)
 }
 
-__dots_scan_stale_symlinks() {
-  local package=$1 target_dir=$2 rel_dir target_path link link_target abs_target
-  local pkg_dir=$DOTFILES/$package
+# Yield (NUL-delimited) absolute paths of dangling symlinks under target_dir
+# that point into this package. pkg_dir is canonicalized so the prefix test
+# holds even when an ancestor of $DOTFILES is itself a symlink (abs_target is
+# fully resolved by readlink -m, so pkg_dir must be resolved to match).
+__dots_each_stale_symlink() {
+  local package=$1 target_dir=$2 pkg_dir rel_dir target_path link link_target abs_target
+  pkg_dir=$(command realpath -m -- "$DOTFILES/$package") || return 0
   [[ -d "$pkg_dir" ]] || return 0
   while IFS= read -r -d '' rel_dir; do
     rel_dir=${rel_dir#"$pkg_dir"}
@@ -327,9 +333,16 @@ __dots_scan_stale_symlinks() {
       link_target=$(command readlink "$link" 2>/dev/null) || continue
       abs_target=$(cd -- "$(dirname -- "$link")" && command readlink -m "$link_target" 2>/dev/null) || continue
       [[ "$abs_target" == "$pkg_dir/"* ]] || continue
-      printf 'stale\t%s\n' "${link#"$target_dir"/}"
+      printf '%s\0' "$link"
     done < <(command find "$target_path" -maxdepth 1 -type l -print0 2>/dev/null)
   done < <(command find "$pkg_dir" -type d -print0 2>/dev/null)
+}
+
+__dots_scan_stale_symlinks() {
+  local package=$1 target_dir=$2 link
+  while IFS= read -r -d '' link; do
+    printf 'stale\t%s\n' "${link#"$target_dir"/}"
+  done < <(__dots_each_stale_symlink "$package" "$target_dir")
 }
 
 __dots_show_package_preview() {
@@ -496,29 +509,16 @@ __dots_stow_with_force() {
 }
 
 __dots_cleanup_broken_symlinks() {
-  local package=$1 target_dir=$2 rel_dir target_path link link_target abs_target removed=0
-  local pkg_dir=$DOTFILES/$package
-  [[ -d "$pkg_dir" ]] || return 0
-  while IFS= read -r -d '' rel_dir; do
-    rel_dir=${rel_dir#"$pkg_dir"}
-    rel_dir=${rel_dir#/}
-    target_path=$target_dir
-    [[ -n "$rel_dir" ]] && target_path=$target_dir/$rel_dir
-    [[ -d "$target_path" ]] || continue
-    while IFS= read -r -d '' link; do
-      [[ -L "$link" && ! -e "$link" ]] || continue
-      link_target=$(command readlink "$link" 2>/dev/null) || continue
-      abs_target=$(cd -- "$(dirname -- "$link")" && command readlink -m "$link_target" 2>/dev/null) || continue
-      [[ "$abs_target" == "$pkg_dir/"* ]] || continue
-      if ((__dots_dry_run == 1)); then
-        __dots_log "[dry-run] Would remove stale symlink: ${link#"$target_dir"/}"
-      else
-        __dots_log_verbose "Removing stale symlink: ${link#"$target_dir"/}"
-        __dots_run_cmd "$target_dir" command rm -- "$link" || return 1
-      fi
-      ((++removed))
-    done < <(command find "$target_path" -maxdepth 1 -type l -print0 2>/dev/null)
-  done < <(command find "$pkg_dir" -type d -print0 2>/dev/null)
+  local package=$1 target_dir=$2 link removed=0
+  while IFS= read -r -d '' link; do
+    if ((__dots_dry_run == 1)); then
+      __dots_log "[dry-run] Would remove stale symlink: ${link#"$target_dir"/}"
+    else
+      __dots_log_verbose "Removing stale symlink: ${link#"$target_dir"/}"
+      __dots_run_cmd "$target_dir" command rm -- "$link" || return 1
+    fi
+    ((++removed))
+  done < <(__dots_each_stale_symlink "$package" "$target_dir")
   ((removed > 0)) && __dots_log_verbose "Removed $removed stale symlink(s)"
   return 0
 }
@@ -592,14 +592,10 @@ __dots_show_available_packages() {
   done < <(__dots_list_packages)
 }
 
-__dots_get_all_packages() {
-  __dots_list_packages
-}
-
 __dots_select_packages_interactive() {
   local -a available=()
   __DOTS_INTERACTIVE_SELECTION=()
-  mapfile -t available < <(__dots_get_all_packages)
+  mapfile -t available < <(__dots_list_packages)
   ((${#available[@]})) || {
     __dots_err "no packages found for selection"
     return 1
@@ -620,6 +616,9 @@ __dots_select_packages_interactive() {
     --prompt="Select packages: " \
     --header="TAB: multi-select, ENTER: confirm, ESC: cancel") || fzf_rc=$?
   [[ $fzf_rc -eq 0 ]] || return 1
+  # An empty selection must not become a one-element array holding "" (which
+  # would flow an empty package name onward), so bail before mapfile.
+  [[ -n "$selected" ]] || return 1
   mapfile -t __DOTS_INTERACTIVE_SELECTION <<<"$selected"
   ((${#__DOTS_INTERACTIVE_SELECTION[@]}))
 }
@@ -714,6 +713,13 @@ __dots_parse_args() {
       __dots_force=1
       shift
       ;;
+    --)
+      shift
+      while (($#)); do
+        __dots_packages_ref+=("$1")
+        shift
+      done
+      ;;
     -*)
       __dots_err "unknown option: $1"
       return 2
@@ -744,7 +750,7 @@ dots::main() {
   fi
 
   if [[ "$__dots_action" == "sync" ]]; then
-    mapfile -t packages < <(__dots_get_all_packages)
+    mapfile -t packages < <(__dots_list_packages)
     ((${#packages[@]})) || {
       __dots_err "no packages found to sync"
       return 1

@@ -118,3 +118,92 @@ EOS
   assert_success
   assert_file_contains "$HOOK_LOG" "alpha|stow|$HOME|$DOTS_REPO"
 }
+
+# ---- dependency resolution ----
+
+make_pkg() { # make_pkg <name>: create a package dir with a file
+  mkdir -p "$DOTS_REPO/$1"
+  printf 'body\n' >"$DOTS_REPO/$1/file"
+}
+
+set_deps() { # set_deps <pkg> <dep>...: write the package's .hooks/depends
+  local pkg=$1
+  shift
+  mkdir -p "$DOTS_REPO/$pkg/.hooks"
+  printf '%s\n' "$@" >"$DOTS_REPO/$pkg/.hooks/depends"
+}
+
+@test "dots resolves a linear dependency chain without nameref warnings" {
+  make_repo
+  make_pkg gamma
+  set_deps alpha beta
+  set_deps beta gamma
+
+  run "$REPO_ROOT/bin/dots" --dir "$DOTS_REPO" --dry-run alpha
+  assert_success
+  refute_output --partial 'circular name reference'
+  refute_output --partial 'unbound variable'
+  assert_output --partial 'beta'
+  assert_output --partial 'gamma'
+  assert_output --partial 'dependency of'
+}
+
+@test "dots resolves a diamond dependency graph" {
+  make_repo
+  make_pkg gamma
+  make_pkg delta
+  set_deps alpha beta gamma
+  set_deps beta delta
+  set_deps gamma delta
+
+  run "$REPO_ROOT/bin/dots" --dir "$DOTS_REPO" --dry-run alpha
+  assert_success
+  refute_output --partial 'circular name reference'
+  assert_output --partial 'delta'
+}
+
+@test "dots detects a dependency cycle instead of looping" {
+  make_repo
+  set_deps alpha beta
+  set_deps beta alpha
+
+  run timeout 10 "$REPO_ROOT/bin/dots" --dir "$DOTS_REPO" --dry-run alpha
+  assert_failure
+  assert_output --partial 'circular dependency detected'
+  refute_output --partial 'circular name reference'
+}
+
+@test "dots fails on a missing dependency without --sync" {
+  make_repo
+  set_deps alpha ghost
+
+  run "$REPO_ROOT/bin/dots" --dir "$DOTS_REPO" --dry-run alpha
+  assert_failure
+  assert_output --partial "dependency 'ghost' not found"
+}
+
+@test "dots --sync skips a missing dependency and warns" {
+  make_repo
+  set_deps alpha ghost
+
+  run "$REPO_ROOT/bin/dots" --dir "$DOTS_REPO" --dry-run --sync
+  assert_success
+  assert_output --partial 'skipped missing packages'
+  assert_output --partial 'ghost'
+}
+
+@test "dots detects stale symlinks when the repo has a symlinked ancestor" {
+  # Real repo behind a symlinked path: abs_target canonicalizes through the
+  # symlink, so pkg_dir must be canonicalized too or the prefix test misses
+  # the stale link (regression: symlinked-ancestor canonicalization).
+  mkdir -p "$SANDBOX/store/repo/.git" "$SANDBOX/store/repo/alpha"
+  printf 'body\n' >"$SANDBOX/store/repo/alpha/file"
+  command ln -s store/repo "$SANDBOX/repo-link"
+  export STOW_LOG="$SANDBOX/stow.log"
+  command ln -s "$SANDBOX/repo-link/alpha/gone" "$HOME/stale-link"
+
+  run "$REPO_ROOT/bin/dots" --dir "$SANDBOX/repo-link" --dry-run --no-hooks alpha
+  assert_success
+  assert_output --partial '1 stale'
+  assert_output --partial '[stale] stale-link'
+}

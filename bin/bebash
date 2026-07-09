@@ -15,9 +15,19 @@ __bebash_bin_source() {
 
 __bebash_bin_dir=$(__bebash_bin_source)
 export __BEBASH_BIN_DIR=$__bebash_bin_dir
+# Locate the library root in both layouts: installed FHS ($bindir/../lib/bebash)
+# and the repo/old-payload tree ($bindir/..). Probe installed first; lib/core.bash
+# is the shared sentinel that exists in the payload regardless of entry point.
 if [[ -z "${BEBASH_LIB:-}" ]]; then
-  BEBASH_LIB=$(cd -P -- "$__bebash_bin_dir/.." && pwd)
+  for __bebash_cand in "$__bebash_bin_dir/../lib/bebash" "$__bebash_bin_dir/.."; do
+    [[ -r "$__bebash_cand/lib/core.bash" ]] && {
+      BEBASH_LIB=$(cd -P -- "$__bebash_cand" && pwd)
+      break
+    }
+  done
+  : "${BEBASH_LIB:?bebash: cannot locate library root}"
   export BEBASH_LIB
+  unset __bebash_cand
 fi
 BEBASH_CONFIG_DIR=${BEBASH_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/bebash}
 BEBASH_DATA_DIR=${BEBASH_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/bebash}

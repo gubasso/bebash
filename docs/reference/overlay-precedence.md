@@ -18,6 +18,7 @@ The user overlay is split by XDG role: *code* lives under the data root
 | Functions          | `functions/<n>.bash`        | `functions/<n>.bash` (wins)             |
 | Libs               | `lib/<n>.bash`                  | `lib/<n>.bash` (augments)               |
 | Startup modules    | `rc.d/NN-*.bash`            | `rc.d/*.bash` (added after)             |
+| Commands           | —                                | `commands/<name>` (put on `PATH` by shipped `rc.d/15-commands-path.bash`) |
 | Disable list       | —                                | `disabled.d/<name>` (in config root)    |
 
 bebash reads user code from `~/.local/share/bebash/` and user config from

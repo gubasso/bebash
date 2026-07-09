@@ -21,7 +21,7 @@ config root `~/.config/bebash/` (`$BEBASH_CONFIG_DIR`):
 ├── functions/         # your functions (registered after shipped → they win)
 ├── lib/               # your libs (available via __bebash_require_lib)
 ├── rc.d/              # your startup modules (sourced after shipped rc.d)
-└── commands/          # your standalone executables (exposed via ~/.local/bin symlinks)
+└── commands/          # your standalone executables (bebash puts this dir on PATH)
 
 ~/.config/bebash/          # your config (config root)
 ├── config.bash        # your env, options, project shortcuts (sourced last)

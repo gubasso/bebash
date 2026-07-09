@@ -38,9 +38,24 @@ User-authored standalone commands live under the overlay data root:
 ~/.local/share/bebash/commands/<name>
 ```
 
-Expose them with explicit symlinks in `~/.local/bin`. bebash does not add the
-commands directory itself to `PATH`; that keeps command exposure intentional and
-easy to audit.
+bebash owns this lane: `rc.d/15-commands-path.bash` prepends
+`$BEBASH_DATA_DIR/commands` to `PATH` at interactive shell init (no per-command
+`~/.local/bin` symlinks). A bebash-aware command reaches the framework's
+functions, libraries, and environment by sourcing the headless loader — no
+`${BEBASH_LIB:-…}` fallback, since a bebash-aware command runs with `BEBASH_LIB`
+exported ([ADR-0024](../decisions/ADR-0024-bebash-owns-commands-path-lane.md)):
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+source "$BEBASH_LIB/init-headless.bash"
+
+# …now __ui_*, __require_verbose, and autoloaded functions are available…
+```
+
+The loader sources the eager output libs and autoloads functions/libs but does
+**not** run `rc.d/*` (interactive/PATH side effects stay with `init.bash`). A
+command that needs none of the framework can skip the source line entirely.
 
 ## Function examples are not standalone commands
 

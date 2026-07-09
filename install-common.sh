@@ -44,8 +44,8 @@ __bebash_install_resolve_targets() {
 
   BEBASH_INSTALL_PREFIX=$PREFIX
   BEBASH_INSTALL_APP_ROOT=$BEBASH_INSTALL_PREFIX/lib/bebash
-  BEBASH_INSTALL_BIN_LINK=$BEBASH_INSTALL_PREFIX/bin/bebash
-  BEBASH_INSTALL_DOTS_LINK=$BEBASH_INSTALL_PREFIX/bin/dots
+  BEBASH_INSTALL_BIN_BEBASH=$BEBASH_INSTALL_PREFIX/bin/bebash
+  BEBASH_INSTALL_BIN_DOTS=$BEBASH_INSTALL_PREFIX/bin/dots
   BEBASH_INSTALL_DATA_HOME=$XDG_DATA_HOME
   BEBASH_INSTALL_STATE_HOME=$XDG_STATE_HOME
   # shellcheck disable=SC2034  # resolved target retained for parity with other XDG homes
@@ -90,8 +90,8 @@ __bebash_install_path_allowed() {
   esac
   __bebash_install_under_root "$path" "$BEBASH_INSTALL_APP_ROOT" && return 0
   __bebash_install_under_root "$path" "$BEBASH_INSTALL_STATE_DIR" && return 0
-  [[ $path == "$BEBASH_INSTALL_BIN_LINK" ]] && return 0
-  [[ $path == "$BEBASH_INSTALL_DOTS_LINK" ]] && return 0
+  [[ $path == "$BEBASH_INSTALL_BIN_BEBASH" ]] && return 0
+  [[ $path == "$BEBASH_INSTALL_BIN_DOTS" ]] && return 0
   [[ $path == "$BEBASH_INSTALL_COMPLETION" ]] && return 0
   [[ $path == "$BEBASH_INSTALL_MANPAGE" ]] && return 0
   return 1
@@ -128,8 +128,8 @@ __bebash_install_prune_empty_dirs() {
     "$BEBASH_INSTALL_APP_ROOT/lib/templates" \
     "$BEBASH_INSTALL_APP_ROOT/lib" \
     "$BEBASH_INSTALL_APP_ROOT" \
-    "$(dirname -- "$BEBASH_INSTALL_BIN_LINK")" \
-    "$(dirname -- "$BEBASH_INSTALL_DOTS_LINK")" \
+    "$(dirname -- "$BEBASH_INSTALL_BIN_BEBASH")" \
+    "$(dirname -- "$BEBASH_INSTALL_BIN_DOTS")" \
     "$(dirname -- "$BEBASH_INSTALL_COMPLETION")" \
     "$(dirname -- "$BEBASH_INSTALL_COMPLETION")/.." \
     "$(dirname -- "$BEBASH_INSTALL_MANPAGE")" \

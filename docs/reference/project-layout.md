@@ -52,11 +52,16 @@ bebash/
 
 ## Directory roles
 
-- `bin/` — Executables: the `bebash` CLI shim (resolves symlinks, sources,
-  dispatches; no logic) plus standalone commands such as `dots`, whose
+- `bin/` — Executables: the `bebash` CLI shim (self-locates its library root,
+  sources, dispatches; no logic) plus standalone commands such as `dots`, whose
   implementation lives in `lib/<name>.bash`
-  ([standalone-command lane](../guides/adding-a-standalone-command.md)).
+  ([standalone-command lane](../guides/adding-a-standalone-command.md)). On
+  install these are copied as real files into `$PREFIX/bin`; the payload keeps no
+  `bin/` subdir ([ADR-0025](../decisions/ADR-0025-real-fhs-bin-with-dual-layout-self-location.md)).
 - `init.bash` — Framework entry point; the file `~/.bashrc` sources.
+- `init-headless.bash` — Non-interactive loader a standalone command sources to
+  reach the framework without the interactive `rc.d` layer
+  ([ADR-0024](../decisions/ADR-0024-bebash-owns-commands-path-lane.md)).
 - `lib/` — Shared machinery sourced by both the framework and the CLI.
 - `libexec/commands/` — CLI-only subcommand handlers (`bebash::cmd::*`).
 - `functions/` — Library functions exposed to interactive shells
@@ -90,10 +95,11 @@ Shared helpers live directly in `lib/`. Keeping the two apart is
 
 ## Install-time mapping
 
-The `bin/`, `lib/`, `libexec/`, `functions/`, `rc.d/`, and `templates/` trees
-plus `init.bash` and `VERSION` are copied into the payload at
-`$PREFIX/lib/bebash/` (with the CLI symlinked onto `PATH`). Completion and man
-files are installed under XDG data targets, not copied into the payload.
+The `lib/`, `libexec/`, `functions/`, `rc.d/`, and `templates/` trees plus
+`init.bash`, `init-headless.bash`, and `VERSION` are copied into the payload at
+`$PREFIX/lib/bebash/`; the `bin/` scripts are installed as real executables in
+`$PREFIX/bin` (not into the payload). Completion and man files are installed
+under XDG data targets, not copied into the payload.
 `VERSION` is a committed file — the authoring source of truth
 ([release-workflow.md](release-workflow.md#version-source-of-truth),
 [ADR-0018](../decisions/ADR-0018-committed-version-is-authoring-sot.md)) — copied

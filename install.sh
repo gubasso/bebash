@@ -59,10 +59,10 @@ rm -rf -- \
   "${BEBASH_INSTALL_APP_ROOT:?}/rc.d" \
   "${BEBASH_INSTALL_APP_ROOT:?}/templates" \
   "$BEBASH_INSTALL_APP_ROOT/init.bash" \
+  "$BEBASH_INSTALL_APP_ROOT/init-headless.bash" \
   "$BEBASH_INSTALL_APP_ROOT/VERSION"
 mkdir -p -- "$BEBASH_INSTALL_APP_ROOT"
 
-__bebash_install_copy_tree "$repo_root/bin" "$BEBASH_INSTALL_APP_ROOT/bin" "$tmp_manifest"
 __bebash_install_copy_tree "$repo_root/lib" "$BEBASH_INSTALL_APP_ROOT/lib" "$tmp_manifest"
 __bebash_install_copy_tree "$repo_root/libexec" "$BEBASH_INSTALL_APP_ROOT/libexec" "$tmp_manifest"
 __bebash_install_copy_tree "$repo_root/functions" "$BEBASH_INSTALL_APP_ROOT/functions" "$tmp_manifest"
@@ -71,16 +71,27 @@ __bebash_install_copy_tree "$repo_root/templates" "$BEBASH_INSTALL_APP_ROOT/temp
 
 cp -- "$repo_root/init.bash" "$BEBASH_INSTALL_APP_ROOT/init.bash"
 __bebash_install_record "$BEBASH_INSTALL_APP_ROOT/init.bash" "$tmp_manifest"
+cp -- "$repo_root/init-headless.bash" "$BEBASH_INSTALL_APP_ROOT/init-headless.bash"
+__bebash_install_record "$BEBASH_INSTALL_APP_ROOT/init-headless.bash" "$tmp_manifest"
 cp -- "$repo_root/VERSION" "$BEBASH_INSTALL_APP_ROOT/VERSION"
 __bebash_install_record "$BEBASH_INSTALL_APP_ROOT/VERSION" "$tmp_manifest"
 
-__bebash_install_mkdir_parent "$BEBASH_INSTALL_BIN_LINK"
-ln -sfn -- "$BEBASH_INSTALL_APP_ROOT/bin/bebash" "$BEBASH_INSTALL_BIN_LINK"
-__bebash_install_record "$BEBASH_INSTALL_BIN_LINK" "$tmp_manifest"
+# Install the CLIs as real executables in $PREFIX/bin (standard FHS layout).
+# Each self-locates its library root at $bindir/../lib/bebash, so no symlink hop
+# into the payload is needed. `rm -f` first so a prior install's symlink (which
+# now dangles, since its payload-bin target was just cleared) is replaced rather
+# than written through.
+__bebash_install_mkdir_parent "$BEBASH_INSTALL_BIN_BEBASH"
+rm -f -- "$BEBASH_INSTALL_BIN_BEBASH"
+cp -- "$repo_root/bin/bebash" "$BEBASH_INSTALL_BIN_BEBASH"
+chmod 0755 -- "$BEBASH_INSTALL_BIN_BEBASH"
+__bebash_install_record "$BEBASH_INSTALL_BIN_BEBASH" "$tmp_manifest"
 
-__bebash_install_mkdir_parent "$BEBASH_INSTALL_DOTS_LINK"
-ln -sfn -- "$BEBASH_INSTALL_APP_ROOT/bin/dots" "$BEBASH_INSTALL_DOTS_LINK"
-__bebash_install_record "$BEBASH_INSTALL_DOTS_LINK" "$tmp_manifest"
+__bebash_install_mkdir_parent "$BEBASH_INSTALL_BIN_DOTS"
+rm -f -- "$BEBASH_INSTALL_BIN_DOTS"
+cp -- "$repo_root/bin/dots" "$BEBASH_INSTALL_BIN_DOTS"
+chmod 0755 -- "$BEBASH_INSTALL_BIN_DOTS"
+__bebash_install_record "$BEBASH_INSTALL_BIN_DOTS" "$tmp_manifest"
 
 __bebash_install_mkdir_parent "$BEBASH_INSTALL_COMPLETION"
 cp -- "$repo_root/completions/bebash.bash" "$BEBASH_INSTALL_COMPLETION"
@@ -108,7 +119,7 @@ trap - EXIT INT TERM
 
 printf 'bebash installed\n' >&2
 printf '  payload: %s\n' "$BEBASH_INSTALL_APP_ROOT" >&2
-printf '  cli: %s\n' "$BEBASH_INSTALL_BIN_LINK" >&2
-printf '  dots: %s\n' "$BEBASH_INSTALL_DOTS_LINK" >&2
+printf '  cli: %s\n' "$BEBASH_INSTALL_BIN_BEBASH" >&2
+printf '  dots: %s\n' "$BEBASH_INSTALL_BIN_DOTS" >&2
 printf '  manifest: %s\n' "$BEBASH_INSTALL_MANIFEST" >&2
 printf 'Open a new interactive shell or source %s.\n' "$BEBASH_INSTALL_BASHRC" >&2

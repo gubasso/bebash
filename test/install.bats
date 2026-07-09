@@ -32,7 +32,6 @@ run_uninstall() {
   run_install
   assert_success
 
-  assert_file_executable "$PREFIX/lib/bebash/bin/bebash"
   assert_file_exists "$PREFIX/lib/bebash/init.bash"
   assert_file_exists "$PREFIX/lib/bebash/lib/loader.bash"
   assert_file_exists "$PREFIX/lib/bebash/lib/core.bash"
@@ -44,13 +43,56 @@ run_uninstall() {
   assert_file_not_exists "$PREFIX/lib/bebash/lib/functions"
   assert_file_not_exists "$PREFIX/lib/bebash/lib/rc.d"
   assert_file_not_exists "$PREFIX/lib/bebash/lib/templates"
-  assert_symlink_to "$PREFIX/lib/bebash/bin/bebash" "$PREFIX/bin/bebash"
-  assert_symlink_to "$PREFIX/lib/bebash/bin/dots" "$PREFIX/bin/dots"
+  # CLIs are installed as real executables in $PREFIX/bin (not symlinks), and
+  # the payload no longer carries a bin/ subdir.
+  assert_file_executable "$PREFIX/bin/bebash"
+  assert_file_executable "$PREFIX/bin/dots"
+  [[ ! -L "$PREFIX/bin/bebash" ]]
+  [[ ! -L "$PREFIX/bin/dots" ]]
+  assert_dir_not_exists "$PREFIX/lib/bebash/bin"
   assert_file_exists "$XDG_DATA_HOME/bash-completion/completions/bebash"
   if [[ -e "$REPO_ROOT/man/bebash.1" ]] || command -v scdoc >/dev/null 2>&1; then
     assert_file_exists "$XDG_DATA_HOME/man/man1/bebash.1"
   fi
   assert_file_exists "$XDG_STATE_HOME/bebash/install-manifest"
+}
+
+@test "install replaces a dangling CLI symlink from the old layout" {
+  # Model an upgrade from the old symlink layout: $PREFIX/bin/bebash is a symlink
+  # into the payload bin/, which the new installer clears — leaving it dangling.
+  # cp must not try to write through it.
+  mkdir -p "$PREFIX/bin"
+  ln -s "$PREFIX/lib/bebash/bin/bebash" "$PREFIX/bin/bebash"
+  ln -s "$PREFIX/lib/bebash/bin/dots" "$PREFIX/bin/dots"
+
+  run_install
+  assert_success
+  assert_file_executable "$PREFIX/bin/bebash"
+  assert_file_executable "$PREFIX/bin/dots"
+  [[ ! -L "$PREFIX/bin/bebash" ]]
+  [[ ! -L "$PREFIX/bin/dots" ]]
+}
+
+@test "installed CLI self-locates its library root with BEBASH_LIB unset" {
+  run_install
+  assert_success
+
+  # A real bin in $PREFIX/bin must resolve the payload at $PREFIX/lib/bebash
+  # from its own path (installed-layout probe), with no BEBASH_LIB in the env.
+  run env -u BEBASH_LIB "$PREFIX/bin/bebash" path
+  assert_success
+  assert_output --partial "payload=$PREFIX/lib/bebash"
+
+  run env -u BEBASH_LIB "$PREFIX/bin/dots" --version
+  assert_success
+}
+
+@test "repo-tree CLI self-locates its library root with BEBASH_LIB unset" {
+  # The same script run from the repo working tree must fall back to the
+  # repo-layout probe ($bindir/..).
+  run env -u BEBASH_LIB "$REPO_ROOT/bin/bebash" path
+  assert_success
+  assert_output --partial "payload=$REPO_ROOT"
 }
 
 @test "manifest is absolute sorted unique whitelisted and excludes bashrc" {
