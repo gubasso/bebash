@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 shopt -s inherit_errexit 2>/dev/null || true
+
+# Report the failing command and line instead of a bare non-zero exit, and make
+# clear that nothing was finalized (the manifest is only moved into place at the
+# very end). errtrace (set -E) propagates this trap into the helper functions.
+__bebash_install_on_err() {
+  local ec=$? line=${1:-?}
+  printf 'bebash: install failed (exit %s) at line %s: %s\n' "$ec" "$line" "${BASH_COMMAND:-?}" >&2
+  printf 'bebash: nothing was finalized; a previous install (if any) is unchanged.\n' >&2
+}
+trap '__bebash_install_on_err "$LINENO"' ERR
 
 __bebash_install_resolve_repo_root() {
   local src=${BASH_SOURCE[0]}
@@ -23,19 +33,46 @@ __bebash_install_copy_tree() {
   done < <(find "$dest" -type f -o -type l | LC_ALL=C sort)
 }
 
+# Remove files recorded by a prior install that this install no longer produces.
+# Lenient by design: an old manifest may predate this version and list paths we
+# no longer manage (e.g. a command extracted into its own project). We only
+# *delete* paths inside the current whitelist; anything outside it is left in
+# place with a note rather than aborting, so cross-version upgrades self-heal
+# instead of failing closed. (The whitelist still guards every `rm`.)
 __bebash_install_remove_stale() {
-  local old_manifest=$1 new_manifest=$2 stale
+  local old_manifest=$1 new_manifest=$2 stale removed=0
   [[ -e $old_manifest ]] || return 0
-  __bebash_install_validate_manifest "$old_manifest"
   while IFS= read -r stale; do
     [[ -n $stale ]] || continue
-    __bebash_install_path_allowed "$stale" || {
-      printf 'bebash: refusing stale path outside install roots: %s\n' "$stale" >&2
-      return 1
-    }
+    if [[ $stale != /* ]] || ! __bebash_install_path_allowed "$stale"; then
+      printf 'bebash: note: leaving a path from a previous install in place (no longer managed): %s\n' "$stale" >&2
+      continue
+    fi
+    [[ -e $stale || -L $stale ]] || continue
     rm -f -- "$stale"
+    removed=$((removed + 1))
   done < <(comm -23 "$old_manifest" "$new_manifest")
   __bebash_install_prune_empty_dirs
+  ((removed == 0)) || printf 'bebash: removed %d stale file(s) from a previous install\n' "$removed" >&2
+}
+
+# Close the orphan blind spot: the app root is fully installer-owned, so any file
+# under it that the fresh manifest does not list is a leftover from an older
+# layout (e.g. a top-level payload file that a past version shipped and this one
+# dropped, or a file a buggy older installer failed to record). Remove it,
+# whitelist-guarded, so upgrades never accumulate cruft the manifest can't reap.
+__bebash_install_reconcile_payload() {
+  local new_manifest=$1 path removed=0
+  [[ -d $BEBASH_INSTALL_APP_ROOT ]] || return 0
+  while IFS= read -r path; do
+    [[ -n $path ]] || continue
+    grep -qFx -- "$path" "$new_manifest" && continue
+    __bebash_install_path_allowed "$path" || continue
+    printf 'bebash: removing orphaned payload file: %s\n' "$path" >&2
+    rm -f -- "$path"
+    removed=$((removed + 1))
+  done < <(find "$BEBASH_INSTALL_APP_ROOT" \( -type f -o -type l \) | LC_ALL=C sort)
+  ((removed == 0)) || printf 'bebash: removed %d orphaned payload file(s)\n' "$removed" >&2
 }
 
 repo_root=$(__bebash_install_resolve_repo_root)
@@ -107,12 +144,14 @@ __bebash_install_write_bashrc_block "$BEBASH_INSTALL_APP_ROOT/init.bash" "$BEBAS
 
 __bebash_install_sort_manifest "$tmp_manifest"
 __bebash_install_validate_manifest "$tmp_manifest"
+__bebash_install_reconcile_payload "$tmp_manifest"
 __bebash_install_remove_stale "$BEBASH_INSTALL_MANIFEST" "$tmp_manifest"
+file_count=$(wc -l <"$tmp_manifest")
 mv -- "$tmp_manifest" "$BEBASH_INSTALL_MANIFEST"
-trap - EXIT INT TERM
+trap - EXIT INT TERM ERR
 
 printf 'bebash installed\n' >&2
-printf '  payload: %s\n' "$BEBASH_INSTALL_APP_ROOT" >&2
-printf '  cli: %s\n' "$BEBASH_INSTALL_BIN_BEBASH" >&2
+printf '  payload:  %s (%s files)\n' "$BEBASH_INSTALL_APP_ROOT" "$file_count" >&2
+printf '  cli:      %s\n' "$BEBASH_INSTALL_BIN_BEBASH" >&2
 printf '  manifest: %s\n' "$BEBASH_INSTALL_MANIFEST" >&2
 printf 'Open a new interactive shell or source %s.\n' "$BEBASH_INSTALL_BASHRC" >&2

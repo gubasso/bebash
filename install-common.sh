@@ -106,6 +106,10 @@ __bebash_install_validate_manifest() {
     fi
     if ! __bebash_install_path_allowed "$path"; then
       printf 'bebash: manifest path outside install roots: %s\n' "$path" >&2
+      printf 'bebash:   current roots: PREFIX=%s XDG_DATA_HOME=%s XDG_STATE_HOME=%s\n' \
+        "$BEBASH_INSTALL_PREFIX" "$BEBASH_INSTALL_DATA_HOME" "$BEBASH_INSTALL_STATE_HOME" >&2
+      printf 'bebash:   if PREFIX/XDG_* changed since the last install, re-run with the same values;\n' >&2
+      printf 'bebash:   otherwise remove the stale manifest and retry: rm -f %s\n' "$manifest" >&2
       return 1
     fi
   done <"$manifest"

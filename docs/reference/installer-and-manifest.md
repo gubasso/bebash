@@ -44,12 +44,18 @@ Root install (`EUID 0`) uses system paths (`$PREFIX/lib`, `/usr/local/bin`,
    `man/bebash.1.scd` via scdoc if a prebuilt `.1` is absent; skipped with a
    warning if scdoc is missing); record them.
 8. **Wire `~/.bashrc`** (next section).
-9. **Finalize the manifest** — sort-unique; diff against the previous manifest and
-   `rm` any now-stale bebash-owned file, pruning empty dirs; move the temp manifest
-   into place at `$state_dir/install-manifest`.
-10. **Print a summary** — install paths + the activation hint.
+9. **Finalize the manifest** — sort-unique; **reconcile** the payload tree (reap any
+   file under the installer-owned `app_root` the fresh manifest does not list — closes
+   the blind spot where the step-4 hard-clear misses arbitrary top-level leftovers);
+   diff against the previous manifest and `rm` any now-stale bebash-owned file, pruning
+   empty dirs; move the temp manifest into place at `$state_dir/install-manifest`.
+10. **Print a summary** — install paths (with payload file count) + the activation hint.
 
-Re-running is idempotent: step 4 clears, steps 5–7 recopy, step 9 prunes.
+Re-running is idempotent: step 4 clears, steps 5–7 recopy, step 9 reconciles + prunes.
+
+On failure the installer reports the failing line/command (via an `ERR` trap) and
+finalizes nothing — the manifest is only moved into place at the very end, so a
+previous install is left intact.
 
 ## Manifest
 
@@ -79,8 +85,16 @@ prune or uninstall — a guard against removing anything outside bebash's own tr
 | `$XDG_DATA_HOME/man/man1/bebash.1`                  | man page         |
 | `$XDG_STATE_HOME/bebash/`                           | manifest + state |
 
-A manifest path outside every whitelisted root is refused (not deleted), so a
-mismatched `PREFIX`/`XDG_*` can never orphan or wipe unrelated files.
+A manifest path outside every whitelisted root is never deleted, so a mismatched
+`PREFIX`/`XDG_*` can never wipe unrelated files. The two paths differ by intent:
+
+- **Re-install** is **self-healing** — an old-manifest path that is no longer
+  whitelisted (e.g. a command extracted into its own project between versions) is
+  left in place with a note and dropped from the new manifest, so the install never
+  fails closed on a stale entry.
+- **Uninstall** is **fail-closed** — a manifest with any out-of-whitelist or
+  traversal (`..`) path is refused wholesale, mutating nothing (the manifest is the
+  authority for what to delete, so a suspicious one must not be acted on).
 
 ## `.bashrc` wiring (marker block)
 

@@ -182,6 +182,44 @@ run_uninstall() {
   ! grep -Fqx -- "$stale" "$XDG_STATE_HOME/bebash/install-manifest"
 }
 
+@test "reinstall self-heals when the prior manifest lists an unmanaged path" {
+  run_install
+  assert_success
+
+  # Model an upgrade where a previously-installed command was dropped from this
+  # version: its path lingers in the old manifest but is no longer whitelisted.
+  # The install must not abort (the old failure mode); the unmanaged path is left
+  # in place (outside the whitelist, never force-removed) and omitted from the
+  # freshly written manifest.
+  legacy="$PREFIX/bin/legacy-tool"
+  printf '#!/bin/sh\n' >"$legacy"
+  printf '%s\n' "$legacy" >>"$XDG_STATE_HOME/bebash/install-manifest"
+  LC_ALL=C sort -u "$XDG_STATE_HOME/bebash/install-manifest" -o "$XDG_STATE_HOME/bebash/install-manifest"
+
+  run_install
+  assert_success
+  assert_output --partial 'no longer managed'
+  assert_file_exists "$legacy"
+  ! grep -Fqx -- "$legacy" "$XDG_STATE_HOME/bebash/install-manifest"
+}
+
+@test "reinstall reaps an orphaned payload file absent from the manifest" {
+  run_install
+  assert_success
+
+  # A leftover under the installer-owned app root that no manifest records (e.g.
+  # a top-level payload file a past version shipped, or a buggy older installer
+  # failed to record). The hard-wipe misses arbitrary top-level files, so the
+  # orphan reconciler must reap it.
+  orphan="$PREFIX/lib/bebash/legacy-orphan.bash"
+  printf 'orphan\n' >"$orphan"
+
+  run_install
+  assert_success
+  assert_output --partial 'orphaned payload file'
+  assert_file_not_exists "$orphan"
+}
+
 @test "reinstall prunes old empty layout dirs" {
   run_install
   assert_success
