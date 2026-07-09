@@ -175,7 +175,7 @@ __bebash_install_escape_for_double_quotes() {
 
 __bebash_install_write_bashrc_block() {
   local init_path=$1 bashrc=${2:-$BEBASH_INSTALL_BASHRC}
-  local escaped block target tmp
+  local escaped block target tmp content
   escaped=$(__bebash_install_escape_for_double_quotes "$init_path")
   block="# >>> bebash >>>"$'\n'
   block+="[[ \$- == *i* ]] && [[ -r \"$escaped\" ]] &&"$'\n'
@@ -189,8 +189,18 @@ __bebash_install_write_bashrc_block() {
   # range-delete keeps this idempotent (a re-run yields exactly one block).
   target=$(__bebash_install_bashrc_target "$bashrc")
   tmp=$(mktemp "$(dirname -- "$target")/.bebash.XXXXXX") || return 1
-  sed '/^# >>> bebash >>>$/,/^# <<< bebash <<<$/d' "$target" >"$tmp"
-  printf '\n%s\n' "$block" >>"$tmp"
+  # Strip any existing block, then re-append it with exactly one blank-line
+  # separator. Command substitution trims trailing newlines, so a re-run
+  # produces byte-identical output instead of accreting blank lines.
+  content=$(sed '/^# >>> bebash >>>$/,/^# <<< bebash <<<$/d' "$target")
+  printf '%s\n\n%s\n' "$content" "$block" >"$tmp"
+
+  # Already correct: leave the file (mtime, dotfiles git status) untouched and
+  # skip the backup — a no-op re-install must not change anything.
+  if cmp -s "$tmp" "$target"; then
+    rm -f "$tmp"
+    return 0
+  fi
 
   # Back up next to the link (e.g. ~/.bashrc.bebash.bak), not inside a
   # dotfiles repo, capturing the real file's pre-install content.

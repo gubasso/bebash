@@ -78,6 +78,7 @@ run_uninstall() {
 @test "bashrc block is idempotent and references resolved payload init" {
   run_install
   assert_success
+  cp "$HOME/.bashrc" "$SANDBOX/bashrc.after1"
   run_install
   assert_success
 
@@ -86,6 +87,9 @@ run_uninstall() {
   assert_file_contains "$HOME/.bashrc" "$PREFIX/lib/bebash/init.bash"
   [[ $(grep -c '^# >>> bebash >>>$' "$HOME/.bashrc") -eq 1 ]]
   [[ $(grep -c '^# <<< bebash <<<$' "$HOME/.bashrc") -eq 1 ]]
+  # A re-install must leave the file byte-identical: no rewrite, no accreting
+  # blank line before the block.
+  cmp "$SANDBOX/bashrc.after1" "$HOME/.bashrc"
   assert_file_contains "$HOME/.bashrc.bebash.bak" 'custom line'
 }
 
@@ -98,6 +102,7 @@ run_uninstall() {
 
   run_install
   assert_success
+  cp "$SANDBOX/dotfiles/.bashrc" "$SANDBOX/dotfiles-bashrc.after1"
   run_install
   assert_success
 
@@ -108,6 +113,8 @@ run_uninstall() {
   assert_file_contains "$SANDBOX/dotfiles/.bashrc" "$PREFIX/lib/bebash/init.bash"
   [[ $(grep -c '^# >>> bebash >>>$' "$SANDBOX/dotfiles/.bashrc") -eq 1 ]]
   [[ $(grep -c '^# <<< bebash <<<$' "$SANDBOX/dotfiles/.bashrc") -eq 1 ]]
+  # A re-install must leave the tracked file byte-identical.
+  cmp "$SANDBOX/dotfiles-bashrc.after1" "$SANDBOX/dotfiles/.bashrc"
   assert_file_exists "$HOME/.bashrc.bebash.bak"
 }
 
