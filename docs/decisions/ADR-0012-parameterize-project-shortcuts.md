@@ -32,6 +32,7 @@ concrete shortcuts (`docs`, `notes`, …) are declared in the user's `config.bas
 
 ## Status
 
-Accepted — enacted by the Tier-2 rows in
-[reference/privacy-tiers.md](../reference/privacy-tiers.md) and the config keys in
-[reference/config-and-xdg.md](../reference/config-and-xdg.md).
+Superseded by [ADR-0026](ADR-0026-retire-tier-2-parameterized-mechanism.md). The
+Tier-2 approach is retired: rather than shipping the mechanism and parameterizing
+targets, `p` and `__project_nvim` move wholesale to the user overlay, and
+`BEBASH_PROJECT_ROOTS` is no longer a framework config key.

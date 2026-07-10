@@ -37,3 +37,8 @@ commands `pup` and `zup` are Tier 3 overlay commands.
 ## Status
 
 Accepted — enacted by which files land in `functions/` vs a private overlay.
+
+Superseded in part by [ADR-0026](ADR-0026-retire-tier-2-parameterized-mechanism.md):
+Tier 2 is retired. The three-tier classification collapses to two — Tier 1 (generic,
+ships) and Tier 3 (personal, overlay-only); the Tier-2 examples here (`p`, the
+`__project_nvim` family) are now overlay code.

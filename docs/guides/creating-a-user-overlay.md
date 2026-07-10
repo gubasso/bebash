@@ -59,22 +59,28 @@ To remove rather than replace, list its name in `disabled.d/`:
 touch ~/.config/bebash/disabled.d/slug   # unsets the shipped `slug`
 ```
 
-## 5. Set config and project shortcuts
+## 5. Set config and personal shortcuts
 
-Put knobs and personal shortcuts in `config.bash` (Tier-2 functions read config
-instead of hardcoded paths —
-[ADR-0012](../decisions/ADR-0012-parameterize-project-shortcuts.md)):
+Put knobs and personal shortcuts in `config.bash` (sourced last, so it can read
+env vars and define functions). The base ships only generic tooling — anything that
+needs a personal target lives entirely in your overlay
+([ADR-0026](../decisions/ADR-0026-retire-tier-2-parameterized-mechanism.md)). A
+project-shortcut setup, for example, is yours to own end to end: a helper lib under
+`lib/`, the functions under `functions/`, and the roots in `config.bash`:
 
 ```bash
+# ~/.local/share/bebash/lib/project.bash   → your reusable helper (loaded via
+#                                             __bebash_require_lib project)
+__project_nvim() { cd "$2" && command nvim "${@:3}"; }
+
 # ~/.config/bebash/config.bash
-BEBASH_PROJECT_ROOTS=("$HOME/Projects" "$HOME/Sources")
-# your own editor shortcuts built on the shipped mechanism:
-docs()  { __project_nvim docs  "$HOME/Documents" "$@"; }
-notes() { __project_nvim notes "$HOME/Notes" "$@"; }
+PROJECT_ROOTS=("${PROJECTS:-$HOME/Projects}")               # env-driven, your own key
+docs()  { __bebash_require_lib project && __project_nvim docs  "$HOME/Documents" "$@"; }
+notes() { __bebash_require_lib project && __project_nvim notes "$HOME/Notes" "$@"; }
 ```
 
 See [../reference/config-and-xdg.md](../reference/config-and-xdg.md) for every
-config key and its default.
+shipped config key and its default.
 
 ## 6. Keep the overlay in your own dotfiles
 

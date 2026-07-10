@@ -18,7 +18,6 @@ bebash/
 │   ├── ui.bash                 # __ui_* human output + __UI_SGR palette (eager)
 │   ├── log.bash                # __log_* machine logs (eager)
 │   ├── git.bash                # git helpers (lazy, load-guarded)
-│   ├── project.bash            # __project_nvim mechanism (lazy)
 ├── libexec/
 │   └── commands/               # one file per CLI subcommand
 │       └── cmd_<name>.bash      # defines bebash::cmd::<name>

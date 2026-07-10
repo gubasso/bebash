@@ -45,7 +45,6 @@ built-in defaults  <  user config.bash  <  environment vars  <  CLI flags
 | `BEBASH_LIB`           | Payload root (set by `init.bash`; override for testing).   |
 | `BEBASH_CONFIG_DIR`    | Config root (default `$XDG_CONFIG_HOME/bebash`).             |
 | `BEBASH_DATA_DIR`      | User code/data root (default `$XDG_DATA_HOME/bebash`).       |
-| `BEBASH_PROJECT_ROOTS` | Array of roots for the `p` fuzzy-cd function (default `("$HOME/Projects")`). |
 | `BEBASH_LOG_LEVEL`     | Machine-log threshold (default `warn`). See [log-api.md](log-api.md). |
 | `BEBASH_LOG_STDERR`    | Mirror log records to stderr when non-empty.               |
 | `BEBASH_LOG_FILE`      | Override the log file path.                                 |
@@ -54,20 +53,6 @@ built-in defaults  <  user config.bash  <  environment vars  <  CLI flags
 Naming: app vars are prefixed `BEBASH_`. Path overrides honor the standard XDG
 vars too. bebash does not invent a `BEBASH_LOG` alias for the level — the level
 var is `BEBASH_LOG_LEVEL`.
-
-## Project shortcuts (Tier-2 config)
-
-Functions that used to hardcode the author's directories now read config
-([ADR-0012](../decisions/ADR-0012-parameterize-project-shortcuts.md)):
-
-```bash
-# ~/.config/bebash/config.bash
-BEBASH_PROJECT_ROOTS=("$HOME/Projects" "$HOME/Sources")   # for `p`
-docs() { __project_nvim docs "$HOME/Documents" "$@"; }     # your own shortcut
-```
-
-The `__project_nvim` mechanism ships; the concrete targets are yours. See
-[privacy-tiers.md](privacy-tiers.md) for which functions are parameterized.
 
 ## Sources
 

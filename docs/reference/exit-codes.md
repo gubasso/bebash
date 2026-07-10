@@ -50,8 +50,8 @@ A good human error answers four things, on stderr, via `__ui_err`/`__ui_hint`:
 ```text
 error: failed to load overlay config
   where: ~/.config/bebash/config.bash (line 12)
-  why:   BEBASH_PROJECT_ROOTS must be an array
-  hint:  set BEBASH_PROJECT_ROOTS=("$HOME/Projects") and retry
+  why:   BEBASH_LOG_LEVEL must be one of: debug info warn error
+  hint:  set BEBASH_LOG_LEVEL=warn and retry
 ```
 
 1. **what** — the operation that failed, one line;

@@ -66,6 +66,7 @@ source-files:
   - decisions/ADR-0023-standalone-command-lane-and-naming.md
   - decisions/ADR-0024-bebash-owns-commands-path-lane.md
   - decisions/ADR-0025-real-fhs-bin-with-dual-layout-self-location.md
+  - decisions/ADR-0026-retire-tier-2-parameterized-mechanism.md
 token-estimate: 24000
 ---
 

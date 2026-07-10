@@ -69,5 +69,5 @@ prompts.
 Run the pre-ship checklist in
 [../reference/conventions.md](../reference/conventions.md#pre-ship-checklist) and
 `just lint`. If the function is generic, it ships in the base; if it hardcodes
-personal paths, parameterize it or keep it in your overlay
-([privacy tiers](../reference/privacy-tiers.md)).
+personal paths — or only works once you supply a personal target — keep it in your
+overlay ([privacy tiers](../reference/privacy-tiers.md)).
