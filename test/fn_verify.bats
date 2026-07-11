@@ -63,6 +63,32 @@ EOF
   has_code AGENTDOC002
 }
 
+@test "verify does not bash-syntax-check non-shell standalone commands" {
+  cat >"$XDG_DATA_HOME/bebash/commands/py-tool" <<'EOF'
+#!/usr/bin/env python3
+def main() -> int:
+    return 0
+EOF
+  chmod +x "$XDG_DATA_HOME/bebash/commands/py-tool"
+  __bebash_verify_run_structural user
+  ! has_code SRC004
+}
+
+@test "user tool file list excludes non-shell standalone commands" {
+  cat >"$XDG_DATA_HOME/bebash/commands/py-tool" <<'EOF'
+#!/usr/bin/env python3
+print("hi")
+EOF
+  cat >"$XDG_DATA_HOME/bebash/commands/sh-tool" <<'EOF'
+#!/usr/bin/env bash
+echo hi
+EOF
+  chmod +x "$XDG_DATA_HOME/bebash/commands/py-tool" "$XDG_DATA_HOME/bebash/commands/sh-tool"
+  run __bebash_verify_user_tool_files
+  [[ "$output" != *py-tool* ]]
+  [[ "$output" == *sh-tool* ]]
+}
+
 @test "verify tool stubs report shellcheck and shfmt codes" {
   local stub="$TMPDIR/stubbin"
   mkdir -p "$stub"

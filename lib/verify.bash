@@ -22,6 +22,19 @@ __bebash_verify_internal_name() {
   [[ ${1-} =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]
 }
 
+__bebash_verify_shell_shebang() {
+  # Return 0 when the shebang line names a shell interpreter (bash/sh family).
+  local line=${1-} first second interp
+  [[ "$line" == '#!'* ]] || return 1
+  read -r first second _ <<<"${line#\#!}"
+  interp=${first##*/}
+  [[ "$interp" == env ]] && interp=${second##*/}
+  case "$interp" in
+  bash | sh | dash | ksh | mksh | zsh) return 0 ;;
+  *) return 1 ;;
+  esac
+}
+
 __bebash_verify_collapse() {
   local value=${1-}
   value=${value//$'\r'/ }
@@ -248,7 +261,11 @@ __bebash_verify_check_standalone() {
   [[ -x "$path" ]] || __bebash_verify_add fail STANDALONE001 "$scope" "$path" "standalone command must be executable"
   [[ "$first" == '#!'* ]] || __bebash_verify_add fail STANDALONE002 "$scope" "$path" "standalone command must have a shebang"
   [[ "$base" != *.bash ]] || __bebash_verify_add warn STANDALONE003 "$scope" "$path" "standalone command basename should not end in .bash"
-  __bebash_verify_bash_n "$scope" "$path"
+  # Only bash-syntax-check shell-interpreted commands; a non-shell shebang
+  # (python, perl, ...) is a valid standalone command and must not be bash -n'd.
+  if [[ "$first" != '#!'* ]] || __bebash_verify_shell_shebang "$first"; then
+    __bebash_verify_bash_n "$scope" "$path"
+  fi
 }
 
 __bebash_verify_run_env() {
@@ -347,12 +364,21 @@ __bebash_verify_run_structural() {
 }
 
 __bebash_verify_user_tool_files() {
-  local config data file
+  local config data file first
   config=$(__bebash_config_dir)
   data=$(__bebash_user_data_dir)
-  for file in "$config/config.bash" "$data"/functions/*.bash "$data"/lib/*.bash "$data"/rc.d/*.bash "$data"/commands/*; do
+  for file in "$config/config.bash" "$data"/functions/*.bash "$data"/lib/*.bash "$data"/rc.d/*.bash; do
     [[ -f "$file" ]] || continue
     printf '%s\n' "$file"
+  done
+  # Standalone commands may be any language; feed only shell-interpreted ones to
+  # the lint tools so non-shell commands (python, ...) are not false failures.
+  for file in "$data"/commands/*; do
+    [[ -f "$file" ]] || continue
+    first=$(__bebash_verify_line "$file" 1)
+    if [[ "$first" != '#!'* ]] || __bebash_verify_shell_shebang "$first"; then
+      printf '%s\n' "$file"
+    fi
   done
 }
 

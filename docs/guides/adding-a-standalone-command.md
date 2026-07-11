@@ -54,6 +54,14 @@ The loader sources the eager output libs and autoloads functions/libs but does
 **not** run `rc.d/*` (interactive/PATH side effects stay with `init.bash`). A
 command that needs none of the framework can skip the source line entirely.
 
+Overlay standalone commands may be written in **any language** — a command with a
+non-shell shebang (e.g. `#!/usr/bin/env python3`) is a first-class citizen of this
+lane. `bebash doctor` honors the shebang: every standalone command is checked for
+being executable, having a shebang, and not ending in `.bash`, but the
+shell-only checks (bash syntax, `shellcheck`, `shfmt`) run **only** when the
+shebang names a shell interpreter (`bash`/`sh` family). A Python or Perl command
+is therefore verifier-clean without contortions.
+
 ## Function examples are not standalone commands
 
 Some shipped references are sourced functions, not executables:
