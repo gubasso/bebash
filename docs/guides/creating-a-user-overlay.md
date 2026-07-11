@@ -9,7 +9,7 @@ concept is in [../explanation/overlay-model.md](../explanation/overlay-model.md)
 ## 1. Scaffold the overlay
 
 ```bash
-bebash init-user
+bebash init --non-interactive
 ```
 
 This creates the overlay skeleton, split by XDG role. Your *code* lives under the
@@ -25,8 +25,15 @@ config root `~/.config/bebash/` (`$BEBASH_CONFIG_DIR`):
 
 ~/.config/bebash/          # your config (config root)
 ├── config.bash        # your env, options, project shortcuts (sourced last)
-└── disabled.d/        # names of shipped functions to suppress
+├── disabled.d/        # names of shipped functions to suppress
+├── AGENTS.md          # lean pointer for coding agents
+└── README.md          # human overlay notes
 ```
+
+`bebash init` also supports `--location dotfiles` and `--location custom --path
+DIR`. Those modes create a tree containing `.config/bebash` and
+`.local/share/bebash`, then symlink the XDG roots to that tree so the runtime
+loads it. Existing non-symlink XDG roots are refused rather than replaced.
 
 ## 2. Add a personal function
 
@@ -84,14 +91,16 @@ shipped config key and its default.
 
 ## 6. Keep the overlay in your own dotfiles
 
-The overlay dir is a normal directory; you can also make it the deploy target of
-a Stow package so your personal setup is tracked in your dotfiles:
+The overlay dir is a normal directory; `bebash init --location dotfiles` creates
+the symlinked shape directly. You can also make it the deploy target of a Stow
+package so your personal setup is tracked in your dotfiles:
 
 ```text
 dotfiles-package/bebash/.config/bebash/        -> ~/.config/bebash/
 dotfiles-package/bebash/.local/share/bebash/   -> ~/.local/share/bebash/
 ```
 
-bebash only ever reads the XDG config and data roots; the deploy step is yours.
-This is how personal Tier-3 functions stay out of the public base while
-remaining available to you ([overlay model](../explanation/overlay-model.md)).
+bebash only ever reads the XDG config and data roots, so dotfiles/custom trees
+must be wired through those roots. This is how personal Tier-3 functions stay out
+of the public base while remaining available to you
+([overlay model](../explanation/overlay-model.md)).

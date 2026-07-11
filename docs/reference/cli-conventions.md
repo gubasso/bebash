@@ -6,14 +6,16 @@ The contract for the `bebash` management CLI (the secondary surface —
 
 ## Subcommand set
 
-- `bebash doctor` — Health check: payload/config/data paths, versions,
-  missing deps.
+- `bebash doctor` — Verification checks: environment, payload/user artifact
+  structure, and user shellcheck/shfmt when present.
 - `bebash list` — List available functions with their `desc:`
   descriptions.
 - `bebash path` — Print resolved paths (payload, config, data, log, manifest).
 - `bebash edit <fn>` — Open a function in `$EDITOR` (`--new <name>`
   scaffolds one).
-- `bebash init-user` — Scaffold user config and data roots.
+- `bebash init` — Scaffold user config and data roots, including dotfiles/custom
+  symlink deployment.
+- `bebash man` — Print the installed reference manual as plain text.
 - `bebash version` — Print the version — reads the committed/installed
   `VERSION` (the authoring source of truth), falling back to
   `git describe --tags` in a dev checkout without one.
@@ -26,12 +28,13 @@ Start with these; add more on demand. Each is one file
 
 ### `doctor`
 
-- stdout: one line per check: `bash`≥4.4, payload, config, and data dirs exist,
-  CLI on `PATH`, log writable, each optional tool (`fzf`, `scdoc`,
-  `git-cliff`) present/absent. `--json` emits an array of
-  `{check,status,detail}`.
-- Failure → exit: `1` if any required check fails; `0` if only optional
-  tools are missing (they warn).
+- stdout: human report with paths, summary counts, and categorized check rows.
+  `--json` emits `{ok,paths,summary,checks,logs}`. `--logs[=N]` appends log
+  records, `--no-tools` skips external tools, and `--scope all|payload|user`
+  selects structural scope. `bash -n` checks payload and user files; shellcheck
+  and shfmt run only over user artifacts.
+- Failure → exit: `1` if any `fail` check exists; `0` if only warnings exist;
+  `2` for usage errors.
 
 ### `list`
 
@@ -53,10 +56,21 @@ Start with these; add more on demand. Each is one file
 - Failure → exit: `2` if `<fn>` is missing and `--new` absent; `69` if
   `$EDITOR` unset.
 
-### `init-user`
+### `init`
 
-- stdout: prints `config=<path>` and `data=<path>`.
-- Failure → exit: `0` (idempotent; never clobbers existing user files).
+- stdout: prints `location=<mode>`, `config=<path>`, `data=<path>`, and
+  `agent_doc=<path>/AGENTS.md`.
+- Flags: `--location xdg|dotfiles|custom`, `--path DIR`, `--refresh-docs`,
+  `--no-doctor`.
+- Failure → exit: `0` when scaffold and doctor are clean; `1` when scaffold
+  succeeds but doctor finds failures; `2` for usage or prompt-safety errors;
+  `73` when a directory or symlink cannot be created. Existing non-symlink
+  XDG roots are never replaced for dotfiles/custom modes.
+
+### `man`
+
+- stdout: deterministic plain-text manual. `--source` prints the scdoc source.
+- Failure → exit: `66` when no manual source can be found.
 
 ### `version`
 
@@ -102,9 +116,10 @@ table. `bebash help <cmd>` and `bebash <cmd> --help` are equivalent.
 ## Agent-facing surface
 
 Per CLI-design guidance, the CLI exposes: `help`/usage, `--json`, a stable error
-shape ([exit-codes.md](exit-codes.md)), `doctor`, `init-user`, completion, and
-the man page (also readable via the CLI). This keeps bebash legible to scripts and
-coding agents, not just humans.
+shape ([exit-codes.md](exit-codes.md)), `doctor`, `init`, completion, and
+`bebash man`. No separate public `check` command ships; `doctor` owns
+verification. This keeps bebash legible to scripts and coding agents, not just
+humans.
 
 ## Sources
 

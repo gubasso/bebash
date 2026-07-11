@@ -1,6 +1,10 @@
 # shellcheck shell=bash
 : 'desc: Show bebash usage.'
 
+__bebash_cmd_help_usage() {
+  printf 'usage: bebash help [command]\n'
+}
+
 bebash::cmd::help() {
   local sub=${1-}
   if [[ -z "$sub" ]]; then

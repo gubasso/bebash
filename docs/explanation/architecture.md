@@ -14,7 +14,7 @@ bebash is two things that share a code base:
    and `rc.d` startup modules. This is what people use minute to minute.
 2. **A management CLI** (`bebash`, secondary). An explicitly-invoked command for
    operations that don't belong in every shell: `doctor`, `list`, `path`, `edit`,
-   `init-user`, `version`. It loads its own code on demand and never runs as part
+   `init`, `man`, `version`. It loads its own code on demand and never runs as part
    of interactive startup.
 
 Keeping these separate is a deliberate decision

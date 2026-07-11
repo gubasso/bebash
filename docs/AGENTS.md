@@ -67,6 +67,10 @@ source-files:
   - decisions/ADR-0024-bebash-owns-commands-path-lane.md
   - decisions/ADR-0025-real-fhs-bin-with-dual-layout-self-location.md
   - decisions/ADR-0026-retire-tier-2-parameterized-mechanism.md
+  - decisions/ADR-0027-verification-and-doctor-sot.md
+  - decisions/ADR-0028-init-replaces-init-user-pre-v1-clean-break.md
+  - decisions/ADR-0029-agent-discoverability-via-cli-no-docs-copy.md
+  - decisions/ADR-0030-defer-bebash-skills.md
 token-estimate: 24000
 ---
 
@@ -98,7 +102,7 @@ directory. These docs are the design + spec that drive the implementation.
   layout, module/loader, `ui`/`log` APIs, output channels, exit codes, config +
   XDG, CLI conventions, installer + manifest, overlay precedence, release
   workflow, privacy tiers, testing, tooling, conventions, inspiration projects.
-- **decisions/** — 25 lean ADRs (`ADR-NNNN-slug.md`, ≤350 words, never deleted).
+- **decisions/** — 30 lean ADRs (`ADR-NNNN-slug.md`, ≤350 words, never deleted).
 
 ## Source map
 

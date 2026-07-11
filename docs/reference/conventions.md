@@ -78,6 +78,7 @@ specific browser, opener, or display server command exists.
 - [ ] Exit codes: `0` ok, `1` failure, `2` usage (extras documented in a header).
 - [ ] `command <tool>` used for external calls inside the function.
 - [ ] File starts with `# shellcheck shell=bash`; `: 'desc: …'` marker present.
+- [ ] `bebash doctor` passes for the intended payload/user scope.
 - [ ] No personal paths/credentials — Tier-checked
       ([privacy-tiers.md](privacy-tiers.md)).
 - [ ] A `test/fn_<name>.bats` (or `cmd_*`) exists; `just lint` and `just test` pass.

@@ -25,7 +25,7 @@ bebash/
 │   └── <name>.bash              # defines <name>; filename == function name
 ├── rc.d/                       # startup modules, sourced in lexical order
 │   └── NN-<topic>.bash
-├── templates/                  # scaffolds for `bebash edit --new` / init-user
+├── templates/                  # scaffolds for `bebash edit --new` / init
 ├── completions/
 │   └── bebash.bash             # bash completion for the CLI
 ├── man/
@@ -64,7 +64,7 @@ bebash/
   (lazy-loaded).
 - `rc.d/` — Startup modules (options, tool integrations), lexical order,
   guarded.
-- `templates/` — Scaffolds emitted by the CLI (`init-user`, `edit --new`).
+- `templates/` — Scaffolds emitted by the CLI (`init`, `edit --new`).
 - `completions/` — Shell completion for the CLI.
 - `man/` — scdoc man-page source, built by `just man`.
 - `test/` — bats-core suite; `fn_*` = library, `cmd_*` = CLI.

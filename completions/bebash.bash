@@ -39,7 +39,7 @@ __bebash_completion() {
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD - 1]}
-  local commands='doctor list path edit init-user version help'
+  local commands='doctor list path edit init man version help'
   local global_flags='--json -v -vv -q --quiet --silent --color -y --yes --non-interactive -h --help --version'
 
   case "$prev" in
@@ -69,9 +69,29 @@ __bebash_completion() {
     mapfile -t COMPREPLY < <(compgen -W "$commands $global_flags" -- "$cur")
     return 0
   fi
+  case "$prev" in
+  --location)
+    mapfile -t COMPREPLY < <(compgen -W 'xdg dotfiles custom' -- "$cur")
+    return 0
+    ;;
+  --scope)
+    mapfile -t COMPREPLY < <(compgen -W 'all payload user' -- "$cur")
+    return 0
+    ;;
+  esac
+
   case "$sub" in
   edit | list)
     mapfile -t COMPREPLY < <(compgen -W "$(__bebash_completion_functions)" -- "$cur")
+    ;;
+  init)
+    mapfile -t COMPREPLY < <(compgen -W '--location --path --refresh-docs --no-doctor -h --help' -- "$cur")
+    ;;
+  doctor)
+    mapfile -t COMPREPLY < <(compgen -W '--json --logs --no-tools --scope -h --help' -- "$cur")
+    ;;
+  man)
+    mapfile -t COMPREPLY < <(compgen -W '--source -h --help' -- "$cur")
     ;;
   help)
     mapfile -t COMPREPLY < <(compgen -W "$commands" -- "$cur")

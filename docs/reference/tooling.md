@@ -38,6 +38,10 @@ justification.
 Canonical flags: `shfmt -i 2 -ci -bn -s` (2-space indent, switch-case indent,
 binary ops at line start, simplify).
 
+`bebash doctor` reuses the same shellcheck configuration and exact shfmt flags
+when optional tools are present. It runs those external tools over user artifacts
+only; repository-owned payload lint remains gated by `just lint`.
+
 ## `.pre-commit-config.yaml` hooks
 
 Hook types installed: `pre-commit`, `commit-msg`, `pre-push`

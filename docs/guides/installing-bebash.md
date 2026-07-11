@@ -65,7 +65,7 @@ git-branch-gone -h # any shipped function is now available
 Scaffold your personal layer at `~/.config/bebash/`:
 
 ```bash
-bebash init-user
+bebash init --non-interactive
 ```
 
 Then add your own functions and config as described in

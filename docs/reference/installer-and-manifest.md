@@ -26,12 +26,14 @@ Root install (`EUID 0`) uses system paths (`$PREFIX/lib`, `/usr/local/bin`,
 3. **Open a temp manifest** under `state_dir` with an `EXIT` trap to clean it.
 4. **Hard-clear the previous payload** (`app_root/bin` — stale from the old
    symlink layout, `app_root/lib`, `app_root/libexec`, `app_root/functions`,
-   `app_root/rc.d`, `app_root/templates`, `app_root/init.bash`,
+  `app_root/rc.d`, `app_root/templates`, `app_root/man`, `app_root/.shellcheckrc`,
+   `app_root/init.bash`,
    `app_root/init-headless.bash`, `app_root/VERSION`) so no stale files survive
    an upgrade. The **overlay is never touched.**
 5. **Copy payload** — `lib/`, `libexec/`, `functions/`, `rc.d/`, `templates/`,
-   `init.bash`, `init-headless.bash`, `VERSION`, recording each written path
-   into the manifest. The payload no longer carries a `bin/` subdir (see step 6).
+   `man/`, `.shellcheckrc`, `init.bash`, `init-headless.bash`, `VERSION`,
+   recording each written path into the manifest. The payload no longer carries
+   a `bin/` subdir (see step 6).
    `VERSION` is a committed repo file — the authoring source of truth — copied
    into `app_root/VERSION` like any other payload file
    ([ADR-0018](../decisions/ADR-0018-committed-version-is-authoring-sot.md); the
@@ -66,9 +68,11 @@ Example (user install):
 
 ```text
 /home/me/.local/lib/bebash/VERSION
+/home/me/.local/lib/bebash/.shellcheckrc
 /home/me/.local/lib/bebash/init-headless.bash
 /home/me/.local/lib/bebash/init.bash
 /home/me/.local/lib/bebash/lib/ui.bash
+/home/me/.local/lib/bebash/man/bebash.1.scd
 /home/me/.local/bin/bebash
 /home/me/.local/share/bash-completion/completions/bebash
 /home/me/.local/share/man/man1/bebash.1

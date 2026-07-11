@@ -4,7 +4,7 @@
 [[ -n "${__bebash_core_loaded:-}" ]] && return 0
 __bebash_core_loaded=1
 
-declare -ga __BEBASH_COMMANDS=(doctor list path edit init-user version help)
+declare -ga __BEBASH_COMMANDS=(doctor list path edit init man version help)
 declare -gA __BEBASH_GLOBAL=(
   [json]=0
   [verbosity]=0
