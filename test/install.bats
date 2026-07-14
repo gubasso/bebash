@@ -38,6 +38,9 @@ run_uninstall() {
   assert_dir_exists "$PREFIX/lib/bebash/libexec/commands"
   assert_dir_exists "$PREFIX/lib/bebash/functions"
   assert_dir_exists "$PREFIX/lib/bebash/rc.d"
+  assert_file_exists "$PREFIX/lib/bebash/rc.d/15-commands-path.bash"
+  assert_file_exists "$PREFIX/lib/bebash/rc.d/20-navigation.bash"
+  [[ "$(find "$PREFIX/lib/bebash/rc.d" -maxdepth 1 -type f -printf '%f\n' | LC_ALL=C sort | tr '\n' ' ')" = "15-commands-path.bash 20-navigation.bash " ]]
   assert_dir_exists "$PREFIX/lib/bebash/templates"
   assert_file_not_exists "$PREFIX/lib/bebash/lib/commands"
   assert_file_not_exists "$PREFIX/lib/bebash/lib/functions"
@@ -98,12 +101,12 @@ run_uninstall() {
     [[ $path != "$HOME/.bashrc" ]]
     [[ $path != "$HOME/.bashrc.bebash.bak" ]]
     case "$path" in
-      "$PREFIX/lib/bebash" | "$PREFIX/lib/bebash"/*) ;;
-      "$PREFIX/bin/bebash") ;;
-      "$XDG_DATA_HOME/bash-completion/completions/bebash") ;;
-      "$XDG_DATA_HOME/man/man1/bebash.1") ;;
-      "$XDG_STATE_HOME/bebash" | "$XDG_STATE_HOME/bebash"/*) ;;
-      *) fail "manifest path outside whitelist: $path" ;;
+    "$PREFIX/lib/bebash" | "$PREFIX/lib/bebash"/*) ;;
+    "$PREFIX/bin/bebash") ;;
+    "$XDG_DATA_HOME/bash-completion/completions/bebash") ;;
+    "$XDG_DATA_HOME/man/man1/bebash.1") ;;
+    "$XDG_STATE_HOME/bebash" | "$XDG_STATE_HOME/bebash"/*) ;;
+    *) fail "manifest path outside whitelist: $path" ;;
     esac
   done <"$manifest"
 }

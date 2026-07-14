@@ -20,6 +20,10 @@ is overlay code).
 `fdclip`, `ssh`, `sudo`. Pure git/util tooling; no hardcoded personal paths or
 credentials.
 
+The shipped `rc.d/` lane is also Tier 1, but intentionally narrow and
+program-agnostic: it exposes bebash-managed commands on `PATH` and enables
+bash-only navigation ergonomics for interactive shells.
+
 ## Tier 3 — never ships
 
 | Function / file                | Why                                            |

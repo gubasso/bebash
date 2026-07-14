@@ -62,8 +62,9 @@ bebash/
 - `libexec/commands/` — CLI-only subcommand handlers (`bebash::cmd::*`).
 - `functions/` — Library functions exposed to interactive shells
   (lazy-loaded).
-- `rc.d/` — Startup modules (options, tool integrations), lexical order,
-  guarded.
+- `rc.d/` — Generic startup modules, lexical order, guarded. The shipped lane
+  stays program-agnostic: commands-path wiring plus bash-only navigation
+  ergonomics.
 - `templates/` — Scaffolds emitted by the CLI (`init`, `edit --new`).
 - `completions/` — Shell completion for the CLI.
 - `man/` — scdoc man-page source, built by `just man`.

@@ -88,6 +88,11 @@ EOS
   refute_output --partial "$data/commands"
 }
 
+@test "navigation rc.d enables only generic interactive shell options" {
+  run bash -i -c "source rc.d/20-navigation.bash; shopt -q autocd; shopt -q direxpand; shopt -q cdable_vars"
+  assert_success
+}
+
 @test "init-headless self-locates, autoloads functions, loads eager libs, and skips rc.d" {
   local payload config data
   payload="$(mktemp -d)"

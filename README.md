@@ -1,9 +1,9 @@
 # bebash
 
 A self-contained, XDG-friendly **Bash framework** — fish-style lazy-autoloaded
-functions, `rc.d` startup modules, and a split human/machine output layer — that
-**also** ships a small `bebash` management CLI. Clone it, run `just install`, and
-layer your own functions and config on top without forking.
+functions, a small generic `rc.d` startup lane, and a split human/machine output
+layer — that **also** ships a small `bebash` management CLI. Clone it, run
+`just install`, and layer your own functions and config on top without forking.
 
 > Status: implementation in progress. The [`docs/`](docs/) shelf is the
 > specification that drives the runtime, CLI, installer, and tests.
@@ -16,6 +16,9 @@ layer your own functions and config on top without forking.
   machines (structured `key=value`, never colored), plain stdout for results.
 - **Yours on top of ours.** A shipped, immutable base plus an XDG user overlay
   (`~/.config/bebash/`) where your functions and config **win** over the defaults.
+- **Generic startup.** The shipped `rc.d` lane exposes bebash-managed commands on
+  `PATH` and enables bash-only navigation conveniences (`autocd`, `direxpand`,
+  `cdable_vars`) for interactive shells.
 
 ## Install
 

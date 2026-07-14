@@ -42,7 +42,7 @@ init.bash
   ├─ resolve payload dir (BEBASH_LIB), user code dir (BEBASH_DATA_DIR), user config dir (BEBASH_CONFIG_DIR)
   ├─ EAGER core:   source log.bash → ui.bash → helpers.bash → autoload registry
   ├─ register SHIPPED:  functions/ (stubs), libs (records)
-  ├─ source SHIPPED rc.d/*.bash   (lexical order, each dep-guarded)
+  ├─ source SHIPPED rc.d/*.bash   (lexical order, generic bash-only startup)
   ├─ register USER overlay:  functions/ (win), libs
   ├─ source USER rc.d/*.bash
   ├─ source USER config.bash
