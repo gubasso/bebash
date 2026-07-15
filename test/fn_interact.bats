@@ -52,3 +52,35 @@ EOF
   assert_failure 1
   [[ "$output" == *"gui needed"* ]]
 }
+
+@test "BEBASH_UI=none silences msg and reports neither tty nor gui" {
+  cat >"$TMPDIR/bin/notify-send" <<'EOF'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >>"$NOTIFY_LOG"
+EOF
+  chmod 0755 "$TMPDIR/bin/notify-send"
+  export PATH="$TMPDIR/bin:$PATH"
+  export NOTIFY_LOG="$TMPDIR/notify.log"
+
+  BEBASH_UI="none"
+  run interact::is_tty
+  assert_failure
+  BEBASH_UI="none"
+  run interact::is_gui
+  assert_failure
+
+  # msg writes nothing to stdout/stderr and never invokes notify-send, even for
+  # a level (ok) that would notify in gui mode; an is_gui-gated call stays silent.
+  run bash -c '
+    export BEBASH_UI=none
+    source lib/ui.bash
+    source lib/helpers.bash
+    source lib/interact.bash
+    interact::msg ok "should be silent"
+    interact::is_gui && interact::msg warn "gated, also silent"
+    exit 0
+  '
+  assert_success
+  assert_output ""
+  [[ ! -e "$NOTIFY_LOG" ]]
+}

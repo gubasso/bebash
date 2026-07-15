@@ -7,8 +7,10 @@ decision is [ADR-0009](../decisions/ADR-0009-single-palette-source-of-truth.md).
 
 Commands that must work both at a terminal and from a graphical launcher should
 require `lib/interact.bash` and use `interact::*` instead of calling `__ui_*`,
-rofi, or `notify-send` directly. `BEBASH_UI=auto|tty|gui` controls mode;
-`BEBASH_UI_LABEL` and `BEBASH_UI_ICON` control notification identity.
+rofi, or `notify-send` directly. `BEBASH_UI=auto|tty|gui|none` controls mode
+(`none` = silent: no terminal output, no notifications — for running a command
+purely as an exit-code probe); `BEBASH_UI_LABEL` and `BEBASH_UI_ICON` control
+notification identity.
 
 ## Message helpers (→ stderr)
 

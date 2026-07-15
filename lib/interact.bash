@@ -11,6 +11,7 @@ interact::mode() {
     case "${BEBASH_UI:-auto}" in
     tty) __interact_mode="tty" ;;
     gui) __interact_mode="gui" ;;
+    none) __interact_mode="none" ;;
     *) if [[ -t 0 ]]; then __interact_mode="tty"; else __interact_mode="gui"; fi ;;
     esac
   fi
@@ -24,6 +25,11 @@ interact::msg() {
   local level="$1"
   shift
   local text="$*"
+
+  # Silent mode: a command run purely as an exit-code probe (BEBASH_UI=none)
+  # emits no feedback at all — neither a desktop notification nor an __ui_*
+  # line. Result routing (plain stdout) and exit codes are untouched.
+  [[ $(interact::mode) == none ]] && return 0
 
   if interact::is_gui && command -v notify-send &>/dev/null; then
     local urgency title icon="${BEBASH_UI_ICON:-}"
