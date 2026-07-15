@@ -34,9 +34,16 @@ under `${XDG_CONFIG_HOME:-$HOME/.config}/bebash` and its entry is `config.bash`.
   declarative and never need an `init.bash`.
 - Good: CLI and shell loaders agree that `BEBASH_LIB` contains `init.bash`,
   `VERSION`, `bin/`, and `lib/`.
-- Bad: Moving an installed payload manually requires rerunning the installer so
-  the absolute `.bashrc` marker block is rewritten.
+- Bad: Moving an installed payload to a new prefix means updating the source line
+  in your rc (the source path is absolute).
 
 ## Status
 
 Implemented: [install.sh](../../install.sh), [install-common.sh](../../install-common.sh).
+
+The **content** of this decision stands: an interactive shell sources the
+installed payload `init.bash`, and `BEBASH_LIB` means the payload root. The
+**mechanism** — the installer editing `~/.bashrc` — is superseded by
+[ADR-0033](ADR-0033-installer-never-mutates-user-shell-config.md): the user (or a
+config manager) now adds that source line manually; the installer never writes the
+rc.

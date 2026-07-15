@@ -28,23 +28,31 @@ cd bebash
 just install
 ```
 
-The installer copies the payload to `$PREFIX/lib/bebash/`, symlinks the CLI into
+The installer copies the payload to `$PREFIX/lib/bebash/`, installs the CLI into
 `$PREFIX/bin`, installs completion and the man page under XDG data paths, records
-a manifest, and leaves your overlay intact. It also adds one guarded line to
-your `~/.bashrc` (inside an idempotent marker block, never a blind append):
+a manifest, and leaves your overlay intact. If your overlay has executable
+commands in `$BEBASH_DATA_DIR/commands`, it also runs `bebash link-commands` so
+those commands resolve from non-interactive launchers through the self-locating
+`bebash-cmd` shim.
+
+### Shell integration (manual — one writer per file)
+
+The installer **never edits your `~/.bashrc`**: that is user-authored config, and
+mutating it at runtime would break a read-only / Home-Manager-managed rc
+([ADR-0033](docs/decisions/ADR-0033-installer-never-mutates-user-shell-config.md)).
+Wire it yourself — or let your config manager (Home Manager, stow, chezmoi) own
+it. Add this near the **top** of your interactive shell rc, **before** your
+personal config, so your settings override bebash defaults:
 
 ```bash
-# >>> bebash >>>
-[[ $- == *i* ]] && [[ -r "/home/me/.local/lib/bebash/init.bash" ]] &&
-  source "/home/me/.local/lib/bebash/init.bash"
-# <<< bebash <<<
+[[ $- == *i* ]] && [[ -r "$HOME/.local/lib/bebash/init.bash" ]] &&
+  source "$HOME/.local/lib/bebash/init.bash"
 ```
 
-The installer writes the actual resolved payload path for your machine, not the
-sample `/home/me/...` path. Open a new shell and your functions are available.
-If your overlay has executable commands in `$BEBASH_DATA_DIR/commands`, the
-installer also runs `bebash link-commands` so those commands resolve from
-non-interactive launchers through the self-locating `bebash-cmd` shim.
+Use the resolved payload path the installer prints (default
+`$HOME/.local/lib/bebash/init.bash`). Open a new interactive shell and your
+functions are available. See
+[docs/guides/installing-bebash.md](docs/guides/installing-bebash.md).
 
 ## Documentation
 

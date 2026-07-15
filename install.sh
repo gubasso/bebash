@@ -152,8 +152,6 @@ else
   printf 'bebash: warning: man/bebash.1 missing and scdoc unavailable; skipping man page\n' >&2
 fi
 
-__bebash_install_write_bashrc_block "$BEBASH_INSTALL_APP_ROOT/init.bash" "$BEBASH_INSTALL_BASHRC"
-
 __bebash_install_sort_manifest "$tmp_manifest"
 __bebash_install_validate_manifest "$tmp_manifest"
 __bebash_install_reconcile_payload "$tmp_manifest"
@@ -169,8 +167,17 @@ if [[ -d "$BEBASH_INSTALL_DATA_HOME/bebash/commands" ]]; then
     "$BEBASH_INSTALL_BIN_BEBASH" link-commands || true
 fi
 
+init_path=$BEBASH_INSTALL_APP_ROOT/init.bash
+
 printf 'bebash installed\n' >&2
 printf '  payload:  %s (%s files)\n' "$BEBASH_INSTALL_APP_ROOT" "$file_count" >&2
 printf '  cli:      %s\n' "$BEBASH_INSTALL_BIN_BEBASH" >&2
 printf '  manifest: %s\n' "$BEBASH_INSTALL_MANIFEST" >&2
-printf 'Open a new interactive shell or source %s.\n' "$BEBASH_INSTALL_BASHRC" >&2
+printf '\n' >&2
+printf 'Shell integration is a manual step (the installer never edits your rc).\n' >&2
+printf 'If a config manager (Home Manager, stow, ...) does not already own it, add\n' >&2
+printf 'this near the TOP of your interactive shell rc (e.g. ~/.bashrc) — before your\n' >&2
+printf 'personal config, so your settings can override bebash defaults:\n\n' >&2
+printf '  [[ $- == *i* ]] && [[ -r "%s" ]] &&\n' "$init_path" >&2
+printf '    source "%s"\n\n' "$init_path" >&2
+printf 'Then open a new interactive shell. See docs/guides/installing-bebash.md.\n' >&2

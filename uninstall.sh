@@ -19,8 +19,7 @@ source "$script_dir/install-common.sh"
 __bebash_install_resolve_targets
 
 if [[ ! -e $BEBASH_INSTALL_MANIFEST ]]; then
-  __bebash_install_strip_bashrc_block "$BEBASH_INSTALL_BASHRC"
-  printf 'bebash manifest not found; stripped shell marker block if present\n' >&2
+  printf 'bebash manifest not found; nothing to uninstall\n' >&2
   exit 0
 fi
 
@@ -45,8 +44,9 @@ if [[ -e $commands_manifest ]]; then
 fi
 
 __bebash_install_prune_empty_dirs
-__bebash_install_strip_bashrc_block "$BEBASH_INSTALL_BASHRC"
 rm -f -- "$BEBASH_INSTALL_MANIFEST"
 __bebash_install_prune_empty_dirs
 
 printf 'bebash uninstalled\n' >&2
+printf 'If you added a bebash source line to your shell rc, remove it manually\n' >&2
+printf '(the installer never edited it). Config managers own their own wiring.\n' >&2

@@ -31,5 +31,7 @@ conda/nvm/atuin/starship use.
 
 ## Status
 
-Accepted — enacted by the `.bashrc`-wiring step of `install.sh`; exact logic in
-[reference/installer-and-manifest.md](../reference/installer-and-manifest.md).
+Superseded by [ADR-0033](ADR-0033-installer-never-mutates-user-shell-config.md).
+The installer no longer edits `~/.bashrc` at all: mutating user-authored config at
+runtime violates one-writer-per-file and breaks on a read-only / Home-Manager-managed
+rc. Shell integration is now a documented manual step (or a config manager's job).

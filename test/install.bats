@@ -112,54 +112,48 @@ run_uninstall() {
   done <"$manifest"
 }
 
-@test "bashrc block is idempotent and references resolved payload init" {
+@test "install never touches the user's shell rc" {
+  # One writer per file: the installer owns only its payload + state, never the
+  # user-authored ~/.bashrc. Shell integration is a documented manual step, so a
+  # re-install must leave the rc byte-identical and create no backup file.
+  cp "$HOME/.bashrc" "$SANDBOX/bashrc.before"
   run_install
   assert_success
-  cp "$HOME/.bashrc" "$SANDBOX/bashrc.after1"
   run_install
   assert_success
 
+  cmp "$SANDBOX/bashrc.before" "$HOME/.bashrc"
   assert_file_contains "$HOME/.bashrc" 'custom line'
-  assert_file_contains "$HOME/.bashrc" '# >>> bebash >>>'
-  assert_file_contains "$HOME/.bashrc" "$PREFIX/lib/bebash/init.bash"
-  [[ $(grep -c '^# >>> bebash >>>$' "$HOME/.bashrc") -eq 1 ]]
-  [[ $(grep -c '^# <<< bebash <<<$' "$HOME/.bashrc") -eq 1 ]]
-  # A re-install must leave the file byte-identical: no rewrite, no accreting
-  # blank line before the block.
-  cmp "$SANDBOX/bashrc.after1" "$HOME/.bashrc"
-  assert_file_contains "$HOME/.bashrc.bebash.bak" 'custom line'
+  assert_file_not_contains "$HOME/.bashrc" '# >>> bebash >>>'
+  assert_file_not_exists "$HOME/.bashrc.bebash.bak"
 }
 
-@test "install into a symlinked bashrc preserves the link and is idempotent" {
-  # Model a stow/dotfiles setup: ~/.bashrc is a symlink to a tracked file.
+@test "install leaves a symlinked shell rc and its target untouched" {
+  # Model a stow/dotfiles or Home Manager setup: ~/.bashrc is a symlink to a
+  # tracked (possibly read-only /nix/store) file. The installer must neither
+  # follow nor rewrite it — that would clobber a managed file or fail on a
+  # read-only target.
   mkdir -p "$SANDBOX/dotfiles"
   printf 'custom line\n' >"$SANDBOX/dotfiles/.bashrc"
   rm -f "$HOME/.bashrc"
   ln -s "$SANDBOX/dotfiles/.bashrc" "$HOME/.bashrc"
+  cp "$SANDBOX/dotfiles/.bashrc" "$SANDBOX/dotfiles-bashrc.before"
 
   run_install
   assert_success
-  cp "$SANDBOX/dotfiles/.bashrc" "$SANDBOX/dotfiles-bashrc.after1"
-  run_install
-  assert_success
 
-  # The link must survive; the block must land in the real file, exactly once.
   assert_symlink_to "$SANDBOX/dotfiles/.bashrc" "$HOME/.bashrc"
-  assert_file_contains "$SANDBOX/dotfiles/.bashrc" 'custom line'
-  assert_file_contains "$SANDBOX/dotfiles/.bashrc" '# >>> bebash >>>'
-  assert_file_contains "$SANDBOX/dotfiles/.bashrc" "$PREFIX/lib/bebash/init.bash"
-  [[ $(grep -c '^# >>> bebash >>>$' "$SANDBOX/dotfiles/.bashrc") -eq 1 ]]
-  [[ $(grep -c '^# <<< bebash <<<$' "$SANDBOX/dotfiles/.bashrc") -eq 1 ]]
-  # A re-install must leave the tracked file byte-identical.
-  cmp "$SANDBOX/dotfiles-bashrc.after1" "$SANDBOX/dotfiles/.bashrc"
-  assert_file_exists "$HOME/.bashrc.bebash.bak"
+  cmp "$SANDBOX/dotfiles-bashrc.before" "$SANDBOX/dotfiles/.bashrc"
+  assert_file_not_contains "$SANDBOX/dotfiles/.bashrc" '# >>> bebash >>>'
+  assert_file_not_exists "$HOME/.bashrc.bebash.bak"
 }
 
-@test "uninstall through a symlinked bashrc strips the block and keeps the link" {
+@test "uninstall leaves a symlinked shell rc and its target untouched" {
   mkdir -p "$SANDBOX/dotfiles"
   printf 'custom line\n' >"$SANDBOX/dotfiles/.bashrc"
   rm -f "$HOME/.bashrc"
   ln -s "$SANDBOX/dotfiles/.bashrc" "$HOME/.bashrc"
+  cp "$SANDBOX/dotfiles/.bashrc" "$SANDBOX/dotfiles-bashrc.before"
 
   run_install
   assert_success
@@ -167,7 +161,7 @@ run_uninstall() {
   assert_success
 
   assert_symlink_to "$SANDBOX/dotfiles/.bashrc" "$HOME/.bashrc"
-  assert_file_not_contains "$SANDBOX/dotfiles/.bashrc" '# >>> bebash >>>'
+  cmp "$SANDBOX/dotfiles-bashrc.before" "$SANDBOX/dotfiles/.bashrc"
   assert_file_contains "$SANDBOX/dotfiles/.bashrc" 'custom line'
 }
 
@@ -242,9 +236,10 @@ run_uninstall() {
   assert_file_not_exists "$PREFIX/lib/bebash/lib/templates"
 }
 
-@test "uninstall removes manifest set strips block and preserves overlay" {
+@test "uninstall removes manifest set preserves overlay and leaves bashrc untouched" {
   run_install
   assert_success
+  cp "$HOME/.bashrc" "$SANDBOX/bashrc.before"
   mapfile -t installed <"$XDG_STATE_HOME/bebash/install-manifest"
 
   run_uninstall
@@ -254,8 +249,9 @@ run_uninstall() {
     [[ ! -e $path ]]
   done
   assert_file_not_exists "$XDG_STATE_HOME/bebash/install-manifest"
-  assert_file_not_contains "$HOME/.bashrc" '# >>> bebash >>>'
+  cmp "$SANDBOX/bashrc.before" "$HOME/.bashrc"
   assert_file_contains "$HOME/.bashrc" 'custom line'
+  assert_file_not_contains "$HOME/.bashrc" '# >>> bebash >>>'
   assert_file_exists "$XDG_CONFIG_HOME/bebash/config.bash"
   assert_file_not_exists "$XDG_DATA_HOME/bebash/functions"
 }
@@ -273,7 +269,7 @@ run_uninstall() {
   assert_failure
   assert_file_exists "$outside"
   cmp "$SANDBOX/bashrc.before" "$HOME/.bashrc"
-  assert_file_contains "$HOME/.bashrc" '# >>> bebash >>>'
+  assert_file_not_contains "$HOME/.bashrc" '# >>> bebash >>>'
 }
 
 @test "uninstall refuses traversal manifest path that escapes the whitelist" {
@@ -291,5 +287,5 @@ run_uninstall() {
   assert_failure
   assert_file_exists "$outside"
   cmp "$SANDBOX/bashrc.before" "$HOME/.bashrc"
-  assert_file_contains "$HOME/.bashrc" '# >>> bebash >>>'
+  assert_file_not_contains "$HOME/.bashrc" '# >>> bebash >>>'
 }

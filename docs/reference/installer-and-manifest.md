@@ -45,13 +45,17 @@ Root install (`EUID 0`) uses system paths (`$PREFIX/lib`, `/usr/local/bin`,
 7. **Install completion + man page** to their XDG locations (man built from
    `man/bebash.1.scd` via scdoc if a prebuilt `.1` is absent; skipped with a
    warning if scdoc is missing); record them.
-8. **Wire `~/.bashrc`** (next section).
-9. **Finalize the manifest** — sort-unique; **reconcile** the payload tree (reap any
+8. **Finalize the manifest** — sort-unique; **reconcile** the payload tree (reap any
    file under the installer-owned `app_root` the fresh manifest does not list — closes
    the blind spot where the step-4 hard-clear misses arbitrary top-level leftovers);
    diff against the previous manifest and `rm` any now-stale bebash-owned file, pruning
    empty dirs; move the temp manifest into place at `$state_dir/install-manifest`.
-10. **Print a summary** — install paths (with payload file count) + the activation hint.
+9. **Link overlay commands** — if `$BEBASH_DATA_DIR/commands` exists, run
+   `bebash link-commands` (best-effort) to create/prune `$PREFIX/bin/<name> -> bebash-cmd`
+   shims ([ADR-0031](../decisions/ADR-0031-non-interactive-command-shims.md)).
+10. **Print a summary** — install paths (with payload file count) + the manual
+    shell-integration hint. The installer **never** edits `~/.bashrc`
+    ([ADR-0033](../decisions/ADR-0033-installer-never-mutates-user-shell-config.md)).
 
 Re-running is idempotent: step 4 clears, steps 5–7 recopy, step 9 reconciles + prunes.
 
@@ -100,40 +104,33 @@ A manifest path outside every whitelisted root is never deleted, so a mismatched
   traversal (`..`) path is refused wholesale, mutating nothing (the manifest is the
   authority for what to delete, so a suspicious one must not be acted on).
 
-## `.bashrc` wiring (marker block)
+## Shell integration (not performed by the installer)
 
-Idempotent, backup-first, never a blind append:
+The installer **does not write your `~/.bashrc`** — that is user-authored
+configuration, and mutating it at runtime violates one-writer-per-file and breaks
+on a read-only / Home-Manager-managed rc
+([ADR-0033](../decisions/ADR-0033-installer-never-mutates-user-shell-config.md),
+superseding [ADR-0006](../decisions/ADR-0006-idempotent-bashrc-marker-block.md)).
+Instead it prints the exact line to add and leaves the write to you or your config
+manager. Add it near the top of your interactive rc, before personal config:
 
 ```bash
-begin="# >>> bebash >>>"; end="# <<< bebash <<<"
-block=$'# >>> bebash >>>\n'
-block+=$'[[ $- == *i* ]] && '
-block+=$'[[ -r "/home/me/.local/lib/bebash/init.bash" ]] &&\n'
-block+=$'  source "/home/me/.local/lib/bebash/init.bash"\n'
-block+=$'# <<< bebash <<<'
-
-if grep -qF "$begin" "$HOME/.bashrc" 2>/dev/null; then
-  tmp=$(mktemp) || exit 1
-  sed "/^$begin\$/,/^$end\$/d" "$HOME/.bashrc" > "$tmp"
-  printf '\n%s\n' "$block" >> "$tmp"
-  mv "$tmp" "$HOME/.bashrc"                 # replace existing block in place
-else
-  cp "$HOME/.bashrc" "$HOME/.bashrc.bebash.bak"   # back up once
-  printf '\n%s\n' "$block" >> "$HOME/.bashrc"      # first install
-fi
+[[ $- == *i* ]] && [[ -r "$HOME/.local/lib/bebash/init.bash" ]] &&
+  source "$HOME/.local/lib/bebash/init.bash"
 ```
 
-The sourced line is interactive-guarded (`[[ $- == *i* ]]`) so non-interactive
-shells skip it. The example path is illustrative: the installer writes the
-actual resolved `$app_root/init.bash` path at install time, not a literal
-`$PREFIX` expression, because `PREFIX` and `XDG_*` are not reliable in a fresh
-login shell. The payload `init.bash` then discovers the overlay at
+The `[[ $- == *i* ]]` guard keeps non-interactive shells from paying for it; the
+`-r` guard makes the line inert if bebash is removed. The payload `init.bash`
+then discovers the overlay at
 `${XDG_CONFIG_HOME:-$HOME/.config}/bebash/config.bash`.
 
 ## `uninstall.sh`
 
-Reads the manifest, validates each path against the whitelist, `rm -f`s it, prunes
-now-empty bebash dirs, then strips the `.bashrc` marker block. The overlay
-(`~/.config/bebash/`) is left intact. It must run with the same `PREFIX`/`XDG_*`
-as install — if a manifest path falls outside the expected roots it refuses to
-proceed (rather than orphan files), matching the sibling installer's safety gate.
+Reads the manifest, validates each path against the whitelist, `rm -f`s it, and
+prunes now-empty bebash dirs. It also removes the `bebash-cmd` command shims it
+created (tracked in `$XDG_STATE_HOME/bebash/commands-manifest`, only when they
+still point at `bebash-cmd`). It **never** touches your `~/.bashrc` (it never
+wrote there); remove the source line yourself. The overlay (`~/.config/bebash/`)
+is left intact. It must run with the same `PREFIX`/`XDG_*` as install — if a
+manifest path falls outside the expected roots it refuses to proceed (rather than
+orphan files), matching the sibling installer's safety gate.

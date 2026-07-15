@@ -27,32 +27,42 @@ just install
    (it self-locates its library root — no symlink into the payload);
 3. installs completion and the man page to their XDG locations;
 4. records every written path in a manifest under `$XDG_STATE_HOME/bebash/`;
-5. wires your `~/.bashrc` (next section).
+5. links overlay commands into `$PREFIX/bin` via `bebash link-commands` (if any).
 
-Override the location with `PREFIX=/usr/local just install` (or run as root for a
-system install).
+It does **not** touch your `~/.bashrc` — shell wiring is a manual step (next
+section). Override the location with `PREFIX=/usr/local just install` (or run as
+root for a system install).
 
-## Shell wiring
+## Shell wiring (manual)
 
-The installer adds a single guarded line inside an idempotent marker block —
-never a blind append ([ADR-0006](../decisions/ADR-0006-idempotent-bashrc-marker-block.md),
-[ADR-0019](../decisions/ADR-0019-payload-init-shell-wiring-and-bebash-lib-root.md)):
+The installer never edits your shell rc: `~/.bashrc` is user-authored
+configuration, and mutating it at runtime violates one-writer-per-file and breaks
+on a read-only / Home-Manager-managed rc
+([ADR-0033](../decisions/ADR-0033-installer-never-mutates-user-shell-config.md),
+superseding the auto-wiring of
+[ADR-0006](../decisions/ADR-0006-idempotent-bashrc-marker-block.md)/[ADR-0019](../decisions/ADR-0019-payload-init-shell-wiring-and-bebash-lib-root.md)).
+
+Add this line yourself — or let your config manager (Home Manager, stow, chezmoi)
+own it. Put it near the **top** of your interactive shell rc, **before** your
+personal config, so your own settings can override bebash defaults:
 
 ```bash
-# >>> bebash >>>
-[[ $- == *i* ]] && [[ -r "/home/me/.local/lib/bebash/init.bash" ]] &&
-  source "/home/me/.local/lib/bebash/init.bash"
-# <<< bebash <<<
+[[ $- == *i* ]] && [[ -r "$HOME/.local/lib/bebash/init.bash" ]] &&
+  source "$HOME/.local/lib/bebash/init.bash"
 ```
 
-The installer writes the actual resolved payload `init.bash` path for your
-install, not the sample `/home/me/...` path. Re-running the installer never
-duplicates this block. If the block is already present it is replaced in place;
-if absent, `~/.bashrc` is backed up once before the block is appended.
+Use the resolved payload `init.bash` path the installer prints (default
+`$HOME/.local/lib/bebash/init.bash`). The `[[ $- == *i* ]]` guard keeps
+non-interactive shells from paying for it; the `-r` guard makes the line inert if
+bebash is ever removed.
+
+> **Nix / Home Manager users:** wire the source line declaratively (e.g.
+> `programs.bash.initExtra` or a `~/.bashrc` rendered by your config), positioned
+> early. Do not rely on the installer — it deliberately writes nothing here.
 
 ## Activate
 
-Open a new interactive shell (or `source ~/.bashrc`). Then:
+Open a new interactive shell (or re-source your rc). Then:
 
 ```bash
 bebash doctor      # health check: paths, versions, overlay status
@@ -77,9 +87,10 @@ Then add your own functions and config as described in
 just uninstall
 ```
 
-This reads the manifest, removes only the files bebash installed, prunes empty
-dirs, and strips the `.bashrc` marker block. Your overlay at `~/.config/bebash/`
-is left untouched. Run it with the same `PREFIX`/`XDG_*` you installed with — the
+This reads the manifest, removes only the files bebash installed, and prunes empty
+dirs. It does **not** touch your `~/.bashrc` (it never wrote there) — remove the
+source line yourself if you added it. Your overlay at `~/.config/bebash/` is left
+untouched. Run it with the same `PREFIX`/`XDG_*` you installed with — the
 uninstaller refuses to run if the manifest paths don't match, to avoid orphaning
 files.
 
