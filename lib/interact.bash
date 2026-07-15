@@ -66,7 +66,7 @@ interact::require_gui() {
 }
 
 __interact_rofi() {
-  local -n __rofi_out=$1
+  local -n __rofi_out="$1"
   shift
   local rc=0 err_file=""
 
