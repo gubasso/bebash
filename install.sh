@@ -130,6 +130,12 @@ cp -- "$repo_root/bin/bebash" "$BEBASH_INSTALL_BIN_BEBASH"
 chmod 0755 -- "$BEBASH_INSTALL_BIN_BEBASH"
 __bebash_install_record "$BEBASH_INSTALL_BIN_BEBASH" "$tmp_manifest"
 
+BEBASH_INSTALL_BIN_BEBASH_CMD=$(dirname -- "$BEBASH_INSTALL_BIN_BEBASH")/bebash-cmd
+rm -f -- "$BEBASH_INSTALL_BIN_BEBASH_CMD"
+cp -- "$repo_root/bin/bebash-cmd" "$BEBASH_INSTALL_BIN_BEBASH_CMD"
+chmod 0755 -- "$BEBASH_INSTALL_BIN_BEBASH_CMD"
+__bebash_install_record "$BEBASH_INSTALL_BIN_BEBASH_CMD" "$tmp_manifest"
+
 __bebash_install_mkdir_parent "$BEBASH_INSTALL_COMPLETION"
 cp -- "$repo_root/completions/bebash.bash" "$BEBASH_INSTALL_COMPLETION"
 __bebash_install_record "$BEBASH_INSTALL_COMPLETION" "$tmp_manifest"
@@ -155,6 +161,13 @@ __bebash_install_remove_stale "$BEBASH_INSTALL_MANIFEST" "$tmp_manifest"
 file_count=$(wc -l <"$tmp_manifest")
 mv -- "$tmp_manifest" "$BEBASH_INSTALL_MANIFEST"
 trap - EXIT INT TERM ERR
+
+if [[ -d "$BEBASH_INSTALL_DATA_HOME/bebash/commands" ]]; then
+  BEBASH_LIB=$BEBASH_INSTALL_APP_ROOT \
+    XDG_DATA_HOME=$BEBASH_INSTALL_DATA_HOME \
+    XDG_STATE_HOME=$BEBASH_INSTALL_STATE_HOME \
+    "$BEBASH_INSTALL_BIN_BEBASH" link-commands || true
+fi
 
 printf 'bebash installed\n' >&2
 printf '  payload:  %s (%s files)\n' "$BEBASH_INSTALL_APP_ROOT" "$file_count" >&2

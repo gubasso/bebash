@@ -45,6 +45,7 @@ __bebash_install_resolve_targets() {
   BEBASH_INSTALL_PREFIX=$PREFIX
   BEBASH_INSTALL_APP_ROOT=$BEBASH_INSTALL_PREFIX/lib/bebash
   BEBASH_INSTALL_BIN_BEBASH=$BEBASH_INSTALL_PREFIX/bin/bebash
+  BEBASH_INSTALL_BIN_BEBASH_CMD=$BEBASH_INSTALL_PREFIX/bin/bebash-cmd
   BEBASH_INSTALL_DATA_HOME=$XDG_DATA_HOME
   BEBASH_INSTALL_STATE_HOME=$XDG_STATE_HOME
   # shellcheck disable=SC2034  # resolved target retained for parity with other XDG homes
@@ -90,6 +91,7 @@ __bebash_install_path_allowed() {
   __bebash_install_under_root "$path" "$BEBASH_INSTALL_APP_ROOT" && return 0
   __bebash_install_under_root "$path" "$BEBASH_INSTALL_STATE_DIR" && return 0
   [[ $path == "$BEBASH_INSTALL_BIN_BEBASH" ]] && return 0
+  [[ $path == "$BEBASH_INSTALL_BIN_BEBASH_CMD" ]] && return 0
   [[ $path == "$BEBASH_INSTALL_COMPLETION" ]] && return 0
   [[ $path == "$BEBASH_INSTALL_MANPAGE" ]] && return 0
   return 1

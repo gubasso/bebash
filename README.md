@@ -42,6 +42,9 @@ your `~/.bashrc` (inside an idempotent marker block, never a blind append):
 
 The installer writes the actual resolved payload path for your machine, not the
 sample `/home/me/...` path. Open a new shell and your functions are available.
+If your overlay has executable commands in `$BEBASH_DATA_DIR/commands`, the
+installer also runs `bebash link-commands` so those commands resolve from
+non-interactive launchers through the self-locating `bebash-cmd` shim.
 
 ## Documentation
 

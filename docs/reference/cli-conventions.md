@@ -19,10 +19,13 @@ The contract for the `bebash` management CLI (the secondary surface —
 - `bebash version` — Print the version — reads the committed/installed
   `VERSION` (the authoring source of truth), falling back to
   `git describe --tags` in a dev checkout without one.
+- `bebash link-commands` — Link executable overlay commands into the bebash
+  bindir through `bebash-cmd` for non-interactive launchers.
 - `bebash help [cmd]` — Show usage (also `-h`/`--help`).
 
 Start with these; add more on demand. Each is one file
-`libexec/commands/cmd_<name>.bash` defining `bebash::cmd::<name>`.
+`libexec/commands/cmd_<name>.bash` defining `bebash::cmd::<name>`. Hyphenated
+verbs normalize `-` to `_` for the file and function name.
 
 ## Per-command behavior
 
@@ -76,6 +79,19 @@ Start with these; add more on demand. Each is one file
 
 - stdout: the version string only.
 - Failure → exit: `0`.
+
+### `link-commands`
+
+- stdout: nothing by default; `--json` emits
+  `{linked,skipped,pruned,created,skipped_items,pruned_items}`.
+- Behavior: scans executable files in `$BEBASH_DATA_DIR/commands`, skips
+  `bebash` and `bebash-cmd`, creates atomic symlinks in `$__BEBASH_BIN_DIR` to
+  `bebash-cmd`, and records managed links in
+  `$(__bebash_state_dir)/commands-manifest`. Existing non-links and foreign
+  symlinks are left untouched. `--dry-run` reports without changing files;
+  `--prune-only` removes stale managed links without creating new ones.
+- Failure → exit: `2` for usage errors; `70` when the launcher/bindir context is
+  unavailable.
 
 ### `help [cmd]`
 

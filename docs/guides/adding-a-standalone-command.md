@@ -35,12 +35,16 @@ User-authored standalone commands live under the overlay data root:
 ~/.local/share/bebash/commands/<name>
 ```
 
-bebash owns this lane: `rc.d/15-commands-path.bash` prepends
-`$BEBASH_DATA_DIR/commands` to `PATH` at interactive shell init (no per-command
-`~/.local/bin` symlinks). A bebash-aware command reaches the framework's
-functions, libraries, and environment by sourcing the headless loader — no
-`${BEBASH_LIB:-…}` fallback, since a bebash-aware command runs with `BEBASH_LIB`
-exported ([ADR-0024](../decisions/ADR-0024-bebash-owns-commands-path-lane.md)):
+bebash owns this lane in two ways:
+
+- `rc.d/15-commands-path.bash` prepends `$BEBASH_DATA_DIR/commands` to `PATH` at
+  interactive shell init.
+- `bebash link-commands` links executable overlay commands into the bebash
+  bindir through the self-locating `bebash-cmd` shim, so non-interactive
+  launchers can resolve the same commands.
+
+A bebash-aware command reaches the framework's functions, libraries, and
+environment by sourcing the headless loader:
 
 ```bash
 #!/usr/bin/env bash
@@ -50,7 +54,9 @@ source "$BEBASH_LIB/init-headless.bash"
 # …now __ui_*, __require_verbose, and autoloaded functions are available…
 ```
 
-The loader sources the eager output libs and autoloads functions/libs but does
+The direct command-on-PATH case receives `BEBASH_LIB` from `bebash-cmd`; the
+interactive `$BEBASH_DATA_DIR/commands` case receives it from `init.bash`. The
+loader sources the eager output libs and autoloads functions/libs but does
 **not** run `rc.d/*` (interactive/PATH side effects stay with `init.bash`). A
 command that needs none of the framework can skip the source line entirely.
 

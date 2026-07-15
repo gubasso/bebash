@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -euo pipefail
+shopt -s inherit_errexit 2>/dev/null || true
+
+__bebash_cmd_source() {
+  local src=${BASH_SOURCE[0]}
+  while [[ -L "$src" ]]; do
+    local dir
+    dir=$(cd -P -- "$(dirname -- "$src")" && pwd)
+    src=$(readlink -- "$src")
+    [[ "$src" != /* ]] && src=$dir/$src
+  done
+  cd -P -- "$(dirname -- "$src")" && pwd
+}
+
+__bebash_cmd_die() {
+  printf 'bebash-cmd: %s\n' "$*" >&2
+  exit 70
+}
+
+__bebash_cmd_bin_dir=$(__bebash_cmd_source)
+export __BEBASH_BIN_DIR=$__bebash_cmd_bin_dir
+if [[ -z "${BEBASH_LIB:-}" ]]; then
+  for __bebash_cmd_cand in "$__bebash_cmd_bin_dir/../lib/bebash" "$__bebash_cmd_bin_dir/.."; do
+    [[ -r "$__bebash_cmd_cand/init-headless.bash" ]] && {
+      BEBASH_LIB=$(cd -P -- "$__bebash_cmd_cand" && pwd)
+      break
+    }
+  done
+  [[ -n "${BEBASH_LIB:-}" ]] || __bebash_cmd_die "cannot locate library root"
+  export BEBASH_LIB
+  unset __bebash_cmd_cand
+fi
+
+BEBASH_CONFIG_DIR=${BEBASH_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/bebash}
+BEBASH_DATA_DIR=${BEBASH_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/bebash}
+export BEBASH_CONFIG_DIR BEBASH_DATA_DIR
+
+# shellcheck source=init-headless.bash
+source "$BEBASH_LIB/init-headless.bash"
+
+__bebash_cmd_name=${0##*/}
+__bebash_cmd_path=$BEBASH_DATA_DIR/commands/$__bebash_cmd_name
+if [[ ! -x "$__bebash_cmd_path" || ! -f "$__bebash_cmd_path" ]]; then
+  printf 'bebash-cmd: unknown command: %s\n' "$__bebash_cmd_name" >&2
+  exit 127
+fi
+
+exec "$__bebash_cmd_path" "$@"

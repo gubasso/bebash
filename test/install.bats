@@ -103,6 +103,7 @@ run_uninstall() {
     case "$path" in
     "$PREFIX/lib/bebash" | "$PREFIX/lib/bebash"/*) ;;
     "$PREFIX/bin/bebash") ;;
+    "$PREFIX/bin/bebash-cmd") ;;
     "$XDG_DATA_HOME/bash-completion/completions/bebash") ;;
     "$XDG_DATA_HOME/man/man1/bebash.1") ;;
     "$XDG_STATE_HOME/bebash" | "$XDG_STATE_HOME/bebash"/*) ;;

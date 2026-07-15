@@ -4,7 +4,7 @@
 [[ -n "${__bebash_core_loaded:-}" ]] && return 0
 __bebash_core_loaded=1
 
-declare -ga __BEBASH_COMMANDS=(doctor list path edit init man version help)
+declare -ga __BEBASH_COMMANDS=(doctor list path edit init man version link-commands help)
 declare -gA __BEBASH_GLOBAL=(
   [json]=0
   [verbosity]=0
@@ -31,6 +31,10 @@ __bebash_xdg_data_home() {
 
 __bebash_manifest_path() {
   printf '%s/install-manifest\n' "$(__bebash_state_dir)"
+}
+
+__bebash_commands_manifest_path() {
+  printf '%s/commands-manifest\n' "$(__bebash_state_dir)"
 }
 
 __bebash_completion_path() {
@@ -71,8 +75,9 @@ __bebash_command_known() {
 }
 
 __bebash_command_desc() {
-  local sub=${1-} path line desc
-  path="${BEBASH_LIB}/libexec/commands/cmd_${sub}.bash"
+  local sub=${1-} symbol path line desc
+  symbol=$(__bebash_cmd_symbol "$sub")
+  path="${BEBASH_LIB}/libexec/commands/cmd_${symbol}.bash"
   if [[ -r "$path" ]]; then
     while IFS= read -r line; do
       [[ "$line" == ": 'desc: "* ]] || continue

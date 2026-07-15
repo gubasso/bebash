@@ -31,6 +31,19 @@ while IFS= read -r path || [[ -n $path ]]; do
   rm -f -- "$path"
 done <"$BEBASH_INSTALL_MANIFEST"
 
+commands_manifest=$BEBASH_INSTALL_STATE_DIR/commands-manifest
+if [[ -e $commands_manifest ]]; then
+  while IFS= read -r path || [[ -n $path ]]; do
+    [[ -n $path ]] || continue
+    if [[ -L $path ]]; then
+      target=$(readlink -- "$path") || target=
+      [[ $target != /* && -n $target ]] && target=$(cd -P -- "$(dirname -- "$path")" && pwd)/$target
+      [[ $target == "$BEBASH_INSTALL_BIN_BEBASH_CMD" ]] && rm -f -- "$path"
+    fi
+  done <"$commands_manifest"
+  rm -f -- "$commands_manifest"
+fi
+
 __bebash_install_prune_empty_dirs
 __bebash_install_strip_bashrc_block "$BEBASH_INSTALL_BASHRC"
 rm -f -- "$BEBASH_INSTALL_MANIFEST"
