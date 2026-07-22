@@ -13,10 +13,10 @@ and a self-describing `desc:` marker on line 2:
 
 ```bash
 # shellcheck shell=bash
-: 'desc: Delete local branches whose upstream is gone.'
+: 'desc: Sync local branches with a remote.'
 
-git-branch-gone() {
-  local force=0 yes=0
+git-branch-sync() {
+  local remote=origin dry=0
   # ... parse flags, do the work ...
 }
 ```
@@ -43,8 +43,8 @@ Never hardcode ANSI or hand-roll a `[y/N]` read — draw from `__UI_SGR` and
 If you need a shared lib, require it inside the function so startup stays lazy:
 
 ```bash
-git-branch-gone() {
-  __bebash_require_lib git || return
+git-branch-sync() {
+  __bebash_require_lib interact || return
   # ...
 }
 ```

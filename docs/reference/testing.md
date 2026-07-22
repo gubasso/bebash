@@ -49,8 +49,8 @@ setup() {
   _common_setup
 }
 
-@test "git-branch-gone -h prints usage and exits 0" {
-  run git-branch-gone -h
+@test "git-branch-sync -h prints usage and exits 0" {
+  run git-branch-sync -h
   assert_success
   assert_output --partial 'usage:'
 }

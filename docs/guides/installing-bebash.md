@@ -67,7 +67,7 @@ Open a new interactive shell (or re-source your rc). Then:
 ```bash
 bebash doctor      # health check: paths, versions, overlay status
 bebash list        # list available functions with their descriptions
-git-branch-gone -h # any shipped function is now available
+git-branch-sync -h # any shipped function is now available
 ```
 
 ## Set up your overlay (optional)

@@ -16,7 +16,7 @@ is overlay code).
 
 ## Tier 1 — ships as-is
 
-`git-branch-gone`, `git-email-rewrite`, `git-emails`, `gpr`, `gi`, `slug`,
+`git-branch-sync`, `git-email-rewrite`, `git-emails`, `gpr`, `gi`, `slug`,
 `fdclip`, `ssh`, `sudo`. Pure git/util tooling; no hardcoded personal paths or
 credentials.
 
