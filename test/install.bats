@@ -28,6 +28,20 @@ run_uninstall() {
   run "$REPO_ROOT/uninstall.sh"
 }
 
+# Echo the first installed locale whose collation is dictionary-style (sorts
+# lowercase 'a' before uppercase 'B'), which is where a byte-sorted manifest and
+# an unqualified `comm` disagree. Returns non-zero if only C/POSIX exist.
+find_dict_locale() {
+  local loc
+  while IFS= read -r loc; do
+    case $loc in C | C.* | POSIX) continue ;; esac
+    [[ $(printf 'B\na\n' | LC_ALL="$loc" sort 2>/dev/null | head -n1) == a ]] || continue
+    printf '%s\n' "$loc"
+    return 0
+  done < <(locale -a 2>/dev/null)
+  return 1
+}
+
 @test "install creates payload cli completion man and manifest" {
   run_install
   assert_success
@@ -178,6 +192,31 @@ run_uninstall() {
   assert_success
   assert_file_not_exists "$stale"
   ! grep -Fqx -- "$stale" "$XDG_STATE_HOME/bebash/install-manifest"
+}
+
+@test "reinstall prunes stale files when comm runs under a dictionary locale" {
+  local dict
+  dict=$(find_dict_locale) || skip "no dictionary-collating locale installed"
+
+  run_install
+  assert_success
+
+  # install.sh writes the manifest with `LC_ALL=C sort`. Under a dictionary
+  # locale an unqualified `comm` rejects that byte-sorted file as "not in sorted
+  # order" and skips pruning; forcing `LC_ALL=C comm` keeps the diff correct. The
+  # stale entry lives under the state dir (whitelisted, but outside the payload
+  # root the reconciler sweeps first) so only the manifest diff can prune it.
+  stale="$XDG_STATE_HOME/bebash/stale-artifact"
+  printf 'stale\n' >"$stale"
+  manifest="$XDG_STATE_HOME/bebash/install-manifest"
+  printf '%s\n' "$stale" >>"$manifest"
+  LC_ALL=C sort -u -- "$manifest" -o "$manifest"
+
+  LC_ALL="$dict" run_install
+  assert_success
+  refute_output --partial 'not in sorted order'
+  assert_file_not_exists "$stale"
+  ! grep -Fqx -- "$stale" "$manifest"
 }
 
 @test "reinstall self-heals when the prior manifest lists an unmanaged path" {

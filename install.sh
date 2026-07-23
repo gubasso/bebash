@@ -51,7 +51,10 @@ __bebash_install_remove_stale() {
     [[ -e $stale || -L $stale ]] || continue
     rm -f -- "$stale"
     removed=$((removed + 1))
-  done < <(comm -23 "$old_manifest" "$new_manifest")
+    # Manifests are written with `LC_ALL=C sort`, so `comm` must also run under C:
+    # under a dictionary-collating locale (e.g. glibc en_US.UTF-8) it rejects the
+    # byte-sorted inputs as "not in sorted order" and aborts pruning.
+  done < <(LC_ALL=C comm -23 "$old_manifest" "$new_manifest")
   __bebash_install_prune_empty_dirs
   ((removed == 0)) || printf 'bebash: removed %d stale file(s) from a previous install\n' "$removed" >&2
 }
