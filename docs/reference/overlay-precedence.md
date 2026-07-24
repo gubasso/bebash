@@ -19,13 +19,17 @@ The user overlay is split by XDG role: *code* lives under the data root
 | Libs               | `lib/<n>.bash`                  | `lib/<n>.bash` (augments)               |
 | Startup modules    | `rc.d/NN-*.bash`            | `rc.d/*.bash` (added after)             |
 | Commands           | —                                | `commands/<name>` (put on `PATH` by shipped `rc.d/15-commands-path.bash`) |
-| Command artifacts  | —                                | `artifacts/<command>/...` (explicitly resolved data; not on `PATH`) |
+| Command artifacts  | `$PREFIX/lib/bebash/artifacts/<command>/...` | `~/.local/share/bebash/artifacts/<command>/...` (explicitly resolved data; not on `PATH`) |
 | Disable list       | —                                | `disabled.d/<name>` (in config root)    |
 
 bebash reads user code from `~/.local/share/bebash/` and user config from
 `~/.config/bebash/`, regardless of whether those directories are plain
 directories or symlinks managed by a separate dotfiles tool
 ([overlay model](../explanation/overlay-model.md)).
+
+Command-owned artifacts use an explicit resolver, not the autoload pipeline:
+commands resolve overlay artifacts first, native artifacts second, and never
+merge partial artifact subtrees.
 
 ## Load order (`init.bash`)
 

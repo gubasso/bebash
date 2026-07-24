@@ -22,6 +22,7 @@ load [AGENTS.md](AGENTS.md) first, then read the zone that owns the change.
   [Creating an overlay](guides/creating-a-user-overlay.md) ·
   [Adding a subcommand](guides/adding-a-cli-subcommand.md) ·
   [Adding a standalone command](guides/adding-a-standalone-command.md) ·
+  [Protecting branches](guides/git-branch-protection.md) ·
   [Cutting a release](guides/cutting-a-release.md)
 - **reference** (Lookup): Specs index below
 - **decisions** (Why): ADR index below
@@ -74,3 +75,4 @@ Lean ADRs (never deleted; superseded or rejected instead). Template:
 - [ADR-0018 — The committed VERSION is the authoring source of truth; the tag mirrors it](decisions/ADR-0018-committed-version-is-authoring-sot.md)
 - [ADR-0019 — Payload init shell wiring and `BEBASH_LIB` root](decisions/ADR-0019-payload-init-shell-wiring-and-bebash-lib-root.md)
 - [ADR-0020 — The repository is self-contained](decisions/ADR-0020-repository-self-containment.md)
+- [ADR-0035 — Native command artifacts lane](decisions/ADR-0035-native-command-artifacts-lane.md)

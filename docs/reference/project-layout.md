@@ -23,6 +23,8 @@ bebash/
 │       └── cmd_<name>.bash      # defines bebash::cmd::<name>
 ├── functions/                  # shipped user-facing functions (lazy)
 │   └── <name>.bash              # defines <name>; filename == function name
+├── artifacts/                  # shipped command-owned static data
+│   └── <command>/               # data files resolved by the owning command
 ├── rc.d/                       # startup modules, sourced in lexical order
 │   └── NN-<topic>.bash
 ├── templates/                  # scaffolds for `bebash edit --new` / init
@@ -62,10 +64,12 @@ bebash/
 - `libexec/commands/` — CLI-only subcommand handlers (`bebash::cmd::*`).
 - `functions/` — Library functions exposed to interactive shells
   (lazy-loaded).
-- `artifacts/<command>/` — Command-private data files under
-  `$BEBASH_DATA_DIR`, such as templates or JSON payloads. These files are not on
-  `PATH` and are not autoloaded; the owning command resolves them explicitly
-  ([ADR-0034](../decisions/ADR-0034-command-private-artifacts-lane.md)).
+- `artifacts/<command>/` — Command-owned static data files, such as templates or
+  JSON payloads. Shipped native artifacts live under the payload root; overlay
+  artifacts live under `$BEBASH_DATA_DIR`. These files are not on `PATH`, are
+  not autoloaded, and are explicitly resolved by the owning command; see
+  [ADR-0034](../decisions/ADR-0034-command-private-artifacts-lane.md) and
+  [ADR-0035](../decisions/ADR-0035-native-command-artifacts-lane.md).
 - `rc.d/` — Generic startup modules, lexical order, guarded. The shipped lane
   stays program-agnostic: commands-path wiring plus bash-only navigation
   ergonomics.
@@ -96,10 +100,11 @@ Shared helpers live directly in `lib/`. Keeping the two apart is
 
 ## Install-time mapping
 
-The `lib/`, `libexec/`, `functions/`, `rc.d/`, and `templates/` trees plus
-`init.bash`, `init-headless.bash`, and `VERSION` are copied into the payload at
-`$PREFIX/lib/bebash/`; the `bin/bebash` script is installed as a real executable in
-`$PREFIX/bin` (not into the payload). Completion and man files are installed
+The `lib/`, `libexec/`, `functions/`, `rc.d/`, `templates/`, and `artifacts/`
+trees plus `init.bash`, `init-headless.bash`, and `VERSION` are copied into the
+payload at `$PREFIX/lib/bebash/`, including shipped command artifacts at
+`$PREFIX/lib/bebash/artifacts/`; the `bin/bebash` script is installed as a real
+executable in `$PREFIX/bin` (not into the payload). Completion and man files are installed
 under XDG data targets, not copied into the payload.
 `VERSION` is a committed file — the authoring source of truth
 ([release-workflow.md](release-workflow.md#version-source-of-truth),

@@ -338,7 +338,7 @@ __bebash_verify_run_structural() {
   if [[ "$scope" == payload || "$scope" == all ]]; then
     declare -A seen=()
     for cmd in "${__BEBASH_COMMANDS[@]:-}"; do
-      file="$BEBASH_LIB/libexec/commands/cmd_${cmd}.bash"
+      file="$BEBASH_LIB/libexec/commands/cmd_$(__bebash_cmd_symbol "$cmd").bash"
       seen["$file"]=1
       [[ -r "$file" ]] || __bebash_verify_add fail CMD004 payload "$file" "registered command has no readable command file"
     done

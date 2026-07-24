@@ -23,6 +23,9 @@ Commands resolve artifacts directly, for example
 `$BEBASH_DATA_DIR/artifacts/git-branch-protection/rulesets`, and own the format
 and validation of their subtree.
 
+Extended by [ADR-0035](ADR-0035-native-command-artifacts-lane.md): adds a
+shipped native artifacts lane the overlay overrides.
+
 ## Consequences
 
 - Good: Commands can ship private resources without adding files to `PATH` or

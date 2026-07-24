@@ -56,6 +56,9 @@ find_dict_locale() {
   assert_file_exists "$PREFIX/lib/bebash/rc.d/20-navigation.bash"
   [[ "$(find "$PREFIX/lib/bebash/rc.d" -maxdepth 1 -type f -printf '%f\n' | LC_ALL=C sort | tr '\n' ' ')" = "15-commands-path.bash 20-navigation.bash " ]]
   assert_dir_exists "$PREFIX/lib/bebash/templates"
+  assert_file_exists "$PREFIX/lib/bebash/artifacts/git-branch-protection/rulesets/master.json"
+  assert_file_exists "$PREFIX/lib/bebash/artifacts/git-branch-protection/rulesets/develop.json"
+  assert_file_exists "$PREFIX/lib/bebash/artifacts/git-branch-protection/rulesets/tags.json"
   assert_file_not_exists "$PREFIX/lib/bebash/lib/commands"
   assert_file_not_exists "$PREFIX/lib/bebash/lib/functions"
   assert_file_not_exists "$PREFIX/lib/bebash/lib/rc.d"
@@ -70,6 +73,7 @@ find_dict_locale() {
     assert_file_exists "$XDG_DATA_HOME/man/man1/bebash.1"
   fi
   assert_file_exists "$XDG_STATE_HOME/bebash/install-manifest"
+  assert_file_contains "$XDG_STATE_HOME/bebash/install-manifest" "$PREFIX/lib/bebash/artifacts/git-branch-protection/rulesets/master.json"
 }
 
 @test "install replaces a dangling CLI symlink from the old layout" {
@@ -185,6 +189,21 @@ find_dict_locale() {
 
   stale="$PREFIX/lib/bebash/lib/stale.bash"
   printf 'stale\n' >"$stale"
+  printf '%s\n' "$stale" >>"$XDG_STATE_HOME/bebash/install-manifest"
+  LC_ALL=C sort -u "$XDG_STATE_HOME/bebash/install-manifest" -o "$XDG_STATE_HOME/bebash/install-manifest"
+
+  run_install
+  assert_success
+  assert_file_not_exists "$stale"
+  ! grep -Fqx -- "$stale" "$XDG_STATE_HOME/bebash/install-manifest"
+}
+
+@test "reinstall prunes stale shipped artifact file" {
+  run_install
+  assert_success
+
+  stale="$PREFIX/lib/bebash/artifacts/git-branch-protection/rulesets/stale.json"
+  printf '{}\n' >"$stale"
   printf '%s\n' "$stale" >>"$XDG_STATE_HOME/bebash/install-manifest"
   LC_ALL=C sort -u "$XDG_STATE_HOME/bebash/install-manifest" -o "$XDG_STATE_HOME/bebash/install-manifest"
 

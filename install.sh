@@ -99,6 +99,7 @@ rm -rf -- \
   "${BEBASH_INSTALL_APP_ROOT:?}/rc.d" \
   "${BEBASH_INSTALL_APP_ROOT:?}/templates" \
   "${BEBASH_INSTALL_APP_ROOT:?}/man" \
+  "${BEBASH_INSTALL_APP_ROOT:?}/artifacts" \
   "$BEBASH_INSTALL_APP_ROOT/.shellcheckrc" \
   "$BEBASH_INSTALL_APP_ROOT/init.bash" \
   "$BEBASH_INSTALL_APP_ROOT/init-headless.bash" \
@@ -111,6 +112,7 @@ __bebash_install_copy_tree "$repo_root/functions" "$BEBASH_INSTALL_APP_ROOT/func
 __bebash_install_copy_tree "$repo_root/rc.d" "$BEBASH_INSTALL_APP_ROOT/rc.d" "$tmp_manifest"
 __bebash_install_copy_tree "$repo_root/templates" "$BEBASH_INSTALL_APP_ROOT/templates" "$tmp_manifest"
 __bebash_install_copy_tree "$repo_root/man" "$BEBASH_INSTALL_APP_ROOT/man" "$tmp_manifest"
+__bebash_install_copy_tree "$repo_root/artifacts" "$BEBASH_INSTALL_APP_ROOT/artifacts" "$tmp_manifest"
 
 cp -- "$repo_root/.shellcheckrc" "$BEBASH_INSTALL_APP_ROOT/.shellcheckrc"
 __bebash_install_record "$BEBASH_INSTALL_APP_ROOT/.shellcheckrc" "$tmp_manifest"
