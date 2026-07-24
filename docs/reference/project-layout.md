@@ -62,6 +62,10 @@ bebash/
 - `libexec/commands/` — CLI-only subcommand handlers (`bebash::cmd::*`).
 - `functions/` — Library functions exposed to interactive shells
   (lazy-loaded).
+- `artifacts/<command>/` — Command-private data files under
+  `$BEBASH_DATA_DIR`, such as templates or JSON payloads. These files are not on
+  `PATH` and are not autoloaded; the owning command resolves them explicitly
+  ([ADR-0034](../decisions/ADR-0034-command-private-artifacts-lane.md)).
 - `rc.d/` — Generic startup modules, lexical order, guarded. The shipped lane
   stays program-agnostic: commands-path wiring plus bash-only navigation
   ergonomics.
