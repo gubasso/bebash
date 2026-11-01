@@ -35,8 +35,10 @@ EOS
 printf 'git@github.com:owner/repo.git\n'
 EOS
   chmod +x "$bindir/git"
-  PATH="$bindir:/usr/bin:/bin"
-  run gpr 1
+  # Only the stub directory is on PATH, so a gh of the host, such as
+  # /usr/bin/gh on a CI runner, cannot satisfy the dependency.
+  ln -s "$(command -v bash)" "$bindir/bash"
+  PATH="$bindir" run gpr 1
   assert_failure
   assert_output --partial 'Missing dependencies'
 }
