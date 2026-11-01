@@ -6,7 +6,7 @@
 #   git-cliff release ritual on `develop` (bump VERSION + CHANGELOG, commit,
 #   sign a v* tag) and pushes --follow-tags. A human-pushed tag DOES retrigger
 #   workflows, so this file fires on the v* tag and:
-#     -> test   : reuses ci.yml (shellcheck/shfmt + bats matrix)
+#     -> test   : reuses ci.yml (the pre-commit and pre-push hook stages)
 #     -> release: `just dist` tarball + sha256, git-cliff release notes,
 #                 gh release create (+ SLSA build-provenance attestation)
 #     -> promote: fast-forwards master onto the tag (ancestry-checked, ff-only)

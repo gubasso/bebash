@@ -18,6 +18,13 @@
 
 default_install_hook_types: [pre-commit, commit-msg, pre-push]
 
+# The pre-commit and pre-push stages together run every check of CI, and the
+# pre-push stage repeats none of the pre-commit stage. A hook with no `stages`
+# runs only at pre-commit. An upstream manifest that names its own `stages`
+# wins over this default, so each such hook below sets `stages: [pre-commit]`.
+# See docs/reference/tooling.md ("Hook stages and CI").
+default_stages: [pre-commit]
+
 repos:
   # --- Generic housekeeping (pre-commit/pre-commit-hooks) ---
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -31,8 +38,10 @@ repos:
       # rewritten to local style; they are excluded from the housekeeping,
       # editorconfig, and shellcheck hooks below.
       - id: end-of-file-fixer
+        stages: [pre-commit]
         exclude: '^test/test_helper/bats-'
       - id: trailing-whitespace
+        stages: [pre-commit]
         # Markdown keeps two-space hard breaks (.editorconfig: *.md sets
         # trim_trailing_whitespace = false).
         args: [--markdown-linebreak-ext=md]
@@ -41,14 +50,17 @@ repos:
       - id: check-merge-conflict
       - id: check-case-conflict
       - id: check-added-large-files
+        stages: [pre-commit]
         args: [--maxkb=2048]
       - id: detect-private-key
       # Sourced libs carry no shebang and are not executable; executables
       # (bin/bebash, install*.sh) carry a shebang and the exec bit. These two
       # hooks enforce exactly that. Vendored bats libraries are exempt.
       - id: check-executables-have-shebangs
+        stages: [pre-commit]
         exclude: '^test/test_helper/bats-'
       - id: check-shebang-scripts-are-executable
+        stages: [pre-commit]
         exclude: '^test/test_helper/bats-'
       # master is written only by CI (ADR-0015); develop stays writable.
       - id: no-commit-to-branch
@@ -83,6 +95,7 @@ repos:
     rev: v3.13.1-1
     hooks:
       - id: shfmt
+        stages: [pre-commit]
         # Canonical flags from docs/reference/tooling.md: 2-space indent,
         # switch-case indent, binary ops at line start, simplify.
         args: [-i, '2', -ci, -bn, -s]
@@ -121,6 +134,9 @@ repos:
     hooks:
       - id: markdownlint-cli2
         files: '^docs/.*\.md$'
+        # Build the hook on the node of the devshell. pre-commit cannot
+        # download a node from a clean environment (nodeenv fails).
+        language_version: system
 
   # --- gitleaks: secret scanner ---
   - repo: https://github.com/gitleaks/gitleaks
@@ -138,6 +154,7 @@ repos:
     rev: v1.48.0
     hooks:
       - id: typos
+        stages: [pre-commit]
 
   # --- committed: Conventional Commits linter (commit-msg) ---
   # Local enforcement of the commit contract the release flow assumes
@@ -166,6 +183,24 @@ repos:
         name: bats integration tests
         language: system
         entry: bats --recursive --filter-tags integration test
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+
+      # The whole suite under each bash that bebash supports. Each
+      # `bats-bash-*` package of flake.nix holds that bash and a bats whose
+      # shebangs point at it. The first push builds them, and the store keeps
+      # them.
+      - id: test-bash-versions
+        name: bats suite under bash 4.4, 5.0, and 5.2
+        language: system
+        entry: >-
+          bash -euo pipefail -c '
+          for v in 4_4 5_0 5_2; do
+          out=$(nix build --no-link --print-out-paths ".#bats-bash-$v");
+          "$out/bin/bash" --version | head -n 1;
+          PATH="$out/bin:$PATH" bats --recursive test;
+          done'
         pass_filenames: false
         always_run: true
         stages: [pre-push]

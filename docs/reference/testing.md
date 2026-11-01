@@ -69,9 +69,10 @@ setup() {
 Via `just` (which drives pre-commit stages):
 
 ```bash
-just test         # unit + integration
-just lint         # shellcheck + shfmt + markdown
+just lint         # pre-commit stage: every lint hook + unit tests
+just test         # pre-push stage: integration + whole suite on bash 4.4/5.0/5.2
 ```
 
-CI runs the suite across bash `4.4`, `5.0`, `5.2` with `submodules: recursive`.
-See [tooling.md](tooling.md).
+The pre-push hook `test-bash-versions` runs the whole suite under bash `4.4`,
+`5.0`, and `5.2`. CI runs the same two stages with `submodules: recursive`.
+See [tooling.md](tooling.md#hook-stages-and-ci).

@@ -21,14 +21,15 @@ install:
 uninstall:
 	./uninstall.sh
 
-# Lint: shellcheck + shfmt + markdown, all via pre-commit.
+# Lint: the pre-commit stage, the same command as the CI job `lint`. It runs
+# every lint hook and the bats unit tests.
 lint:
 	nix develop --command pre-commit run --all-files
 
-# Test: bats unit + integration, driven through pre-commit stages.
+# Test: the pre-push stage, the same command as the CI job `test`. It runs the
+# bats integration tests and the whole suite under bash 4.4, 5.0, and 5.2.
 test:
-	nix develop --command pre-commit run test-unit --all-files --hook-stage pre-commit
-	nix develop --command pre-commit run test-integration --all-files --hook-stage pre-push
+	nix develop --command pre-commit run --all-files --hook-stage pre-push
 
 # Build the man page from its scdoc source.
 man:

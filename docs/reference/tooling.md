@@ -66,9 +66,10 @@ below) is `bin/*`, `lib/**/*.bash`, `libexec/**/*.bash`,
 | gitleaks             | gitleaks             | repo secret scan (pre-commit stage) |
 | typos                | crate-ci/typos       | all (report-only; allowlist in `_typos.toml`) |
 | committed            | crate-ci/committed   | commit-msg — Conventional Commits (ADR-0013); config `committed.toml` |
-| markdown lint/format | markdown tooling     | `docs/**/*.md` (fenced blocks need a language) |
+| markdown lint/format | markdownlint-cli2    | `docs/**/*.md` (fenced blocks need a language); built on the node of the devshell |
 | test-unit            | local (bats)         | pre-commit stage                   |
 | test-integration     | local (bats)         | pre-push stage                     |
+| test-bash-versions   | local (bats)         | pre-push stage; the whole suite under bash 4.4, 5.0, and 5.2 |
 
 Vendored bats helper libraries (`test/test_helper/bats-*`, pinned upstream) are
 excluded from the housekeeping, editorconfig-checker, shellcheck, shellharden,
@@ -79,6 +80,43 @@ false positives in `_typos.toml`. `committed` is the local enforcement of the
 Conventional Commits contract the release flow (ADR-0013/0017) already assumes.
 
 (No skill/agent-linting hooks — those belong to a different project, not bebash.)
+
+## Hook stages and CI
+
+Two rules bind the hooks. A push that passed the local hooks passes CI, so the
+pre-commit and pre-push stages together run every check of CI. The pre-push
+stage runs no hook of the pre-commit stage, and it holds the costly checks.
+[ADR-0036](../decisions/ADR-0036-hooks-hold-every-ci-check.md) records the
+decision.
+
+| Stage      | Hooks                                                    | Local command | CI job |
+| ---------- | -------------------------------------------------------- | ------------- | ------ |
+| pre-commit | every lint hook, and `test-unit`                         | `just lint`   | `lint` |
+| pre-push   | `test-integration`, `test-bash-versions`                 | `just test`   | `test` |
+| commit-msg | `committed`                                              | —             | —      |
+
+`default_stages: [pre-commit]` keeps a hook with no `stages` out of the
+pre-push stage. An upstream manifest that names its own `stages` wins over that
+default, so each such hook sets `stages: [pre-commit]` in
+`.pre-commit-config.yaml`.
+
+The native commands of the two stages, which `just lint`, `just test`, and the
+CI jobs run:
+
+```bash
+nix develop --command pre-commit run --all-files
+nix develop --command pre-commit run --all-files --hook-stage pre-push
+```
+
+`test-bash-versions` runs `nix build` for the packages `bats-bash-4_4`,
+`bats-bash-5_0`, and `bats-bash-5_2` of `flake.nix`. Each package holds a bash
+built from its GNU tarball and a bats whose shebangs point at that bash. The
+first push builds them, and the Nix store keeps them.
+
+CI-only checks: none. Report-only jobs: none. The `release` workflow runs the
+`ci` workflow on a tag, then builds and publishes the release. It adds no check
+of the code. CI has no commit-message check: `committed` runs only in the local
+`commit-msg` hook.
 
 ## `.editorconfig`
 
@@ -101,12 +139,20 @@ indent_style = tab
 trim_trailing_whitespace = false
 ```
 
-## Nix dev shell (optional)
+## Nix dev shell
 
 A `flake.nix` pins the toolchain (bash, shellcheck, shfmt, shellharden, just,
-pre-commit, bats, jq, yq, git, scdoc/mandoc, markdown tooling, git-cliff) so
-`nix develop --command just lint` is reproducible. `shellharden` backs the
-`language: system` pre-commit hook, alongside the local bats hooks.
+pre-commit, bats, jq, yq, git, scdoc/mandoc, markdown tooling, node, git-cliff)
+so `nix develop --command just lint` is reproducible.
+
+Three owners supply the tools of a hook. The devshell holds every tool that a
+recipe or a `language: system` hook calls: `shellharden` and `bats`, for
+example. pre-commit builds the environment of a hook in a language such as
+`python` or `golang`. When pre-commit cannot set up that environment from a
+clean environment, the devshell supplies the missing dependency: the
+`markdownlint-cli2` hook sets `language_version: system` and builds on the
+`node` of the devshell, because pre-commit cannot download a node. The host
+supplies only `nix`, `direnv`, `git`, `bash`, and the base tools.
 
 ## Markdown rule
 
