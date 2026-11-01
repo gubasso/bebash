@@ -9,7 +9,7 @@
 # The `test` job runs the pre-push stage: the integration tests, and the whole
 # bats suite under bash 4.4, 5.0, and 5.2 (hook `test-bash-versions`). The
 # flake builds each bash from its GNU tarball. bats' test helpers
-# (bats-support/-assert/-file) are git submodules, hence `submodules: recursive`.
+# (bats-support/-assert/-file) are vendored in test/test_helper/ (VENDORED.md).
 name: ci
 
 on:

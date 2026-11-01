@@ -2,8 +2,8 @@
 
 ## Context and Problem Statement
 
-CI ran `just lint` and a bats matrix over bash 4.4, 5.0, and 5.2 that no local
-hook ran, so a push that passed the hooks could fail CI. The pre-push stage
+CI ran a bats matrix over bash 4.4, 5.0, and 5.2 that no local hook ran, so a
+push that passed the hooks could fail CI. The pre-push stage
 also repeated every hook of the pre-commit stage, and the `markdownlint-cli2`
 hook installed only where a `node` happened to be on `PATH`. The workspace
 rules of the maintainer (nix-secrets ADR-0077, ADR-0078, and ADR-0079) require
@@ -18,9 +18,9 @@ hook cannot install.
 
 ## Decision Outcome
 
-Chosen option: **a pre-push hook on bash builds that the flake pins**. The
-matrix runs on any machine with Nix, so it is not a CI-only check. It is a
-costly check, so it belongs to the pre-push stage.
+Chosen option: **a pre-push hook on bash builds that the flake pins**. Any
+machine with Nix runs the matrix, so it is not a CI-only check. It is costly,
+so it belongs to the pre-push stage.
 
 - CI runs the two hook stages, with the commands of `just lint` and
   `just test`.
@@ -38,8 +38,9 @@ costly check, so it belongs to the pre-push stage.
 - Good: in the old CI matrix, bats itself ran on the nixpkgs bash through its
   pinned shebang. The hook runs bats on the bash under test.
 - Bad: the first push on a machine builds three bash versions.
-- Bad: `just test` no longer runs the unit tests. `just lint` runs them, in
-  the pre-commit stage.
+- Bad: `just test` no longer runs the `test-unit` hook on the devshell bash.
+  Its matrix still runs the unit tests under bash 4.4, 5.0, and 5.2, and
+  `just lint` runs `test-unit` in the pre-commit stage.
 
 ## Status
 

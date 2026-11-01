@@ -74,5 +74,5 @@ just test         # pre-push stage: integration + whole suite on bash 4.4/5.0/5.
 ```
 
 The pre-push hook `test-bash-versions` runs the whole suite under bash `4.4`,
-`5.0`, and `5.2`. CI runs the same two stages with `submodules: recursive`.
+`5.0`, and `5.2`. CI runs the same two stages.
 See [tooling.md](tooling.md#hook-stages-and-ci).
