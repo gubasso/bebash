@@ -8,9 +8,9 @@ support/assert/file helper libraries and a hermetic git environment.
 ```text
 test/
 ├── test_helper/
-│   ├── bats-support/        # git submodule
-│   ├── bats-assert/         # git submodule
-│   ├── bats-file/           # git submodule
+│   ├── bats-support/        # vendored
+│   ├── bats-assert/         # vendored
+│   ├── bats-file/           # vendored
 │   └── common-setup.bash
 ├── fn_<name>.bats           # library-function tests
 └── cmd_<name>.bats          # CLI-subcommand tests

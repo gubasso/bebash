@@ -13,8 +13,9 @@
 # External tool notes:
 #   - shellcheck reads .shellcheckrc (external-sources, source-path, disable=SC1091)
 #     and runs with -x to follow sourced files.
-#   - bats + the bats-support/assert/file submodules must be available for the
-#     local test hooks (see docs/reference/testing.md).
+#   - the local test hooks run bats from the dev shell with the
+#     bats-support/assert/file helpers vendored in test/test_helper/
+#     (see docs/reference/testing.md).
 
 default_install_hook_types: [pre-commit, commit-msg, pre-push]
 

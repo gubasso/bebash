@@ -31,7 +31,7 @@ bebash/
 ├── man/
 │   └── bebash.1.scd            # scdoc source → bebash.1
 ├── test/
-│   ├── test_helper/            # bats-support / bats-assert / bats-file submodules
+│   ├── test_helper/            # bats-support / bats-assert / bats-file, vendored
 │   │   └── common-setup.bash
 │   ├── cmd_*.bats              # CLI subcommand tests
 │   └── fn_*.bats               # library function tests
