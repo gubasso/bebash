@@ -1,0 +1,6 @@
+{
+  "Exclude": [
+    "^CHANGELOG\\.md$",
+    "^flake\\.lock$"
+  ]
+}

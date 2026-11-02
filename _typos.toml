@@ -7,4 +7,6 @@
 
 [files]
 # Vendored bats helper libraries are pinned upstream; do not scan them.
-extend-exclude = ["test/test_helper/bats-*"]
+# git-cliff writes CHANGELOG.md and nix writes flake.lock, and a generated file
+# keeps its generator's form (see docs/reference/tooling.md).
+extend-exclude = ["test/test_helper/bats-*", "CHANGELOG.md", "flake.lock"]

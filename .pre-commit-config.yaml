@@ -38,15 +38,22 @@ repos:
       # upstream releases (see test/test_helper/VENDORED.md) and must not be
       # rewritten to local style; they are excluded from the housekeeping,
       # editorconfig, and shellcheck hooks below.
+      #
+      # A generated file follows its generator, so the two fixers also skip
+      # git-cliff's CHANGELOG.md and nix's flake.lock: `just release` commits
+      # the changelog exactly as git-cliff writes it, and end-of-file-fixer
+      # rewrites that output. typos (_typos.toml) and editorconfig-checker
+      # (.editorconfig-checker.json) exclude the same two files in their own
+      # configuration. See docs/reference/tooling.md.
       - id: end-of-file-fixer
         stages: [pre-commit]
-        exclude: '^test/test_helper/bats-'
+        exclude: '^(test/test_helper/bats-|CHANGELOG\.md$|flake\.lock$)'
       - id: trailing-whitespace
         stages: [pre-commit]
         # Markdown keeps two-space hard breaks (.editorconfig: *.md sets
         # trim_trailing_whitespace = false).
         args: [--markdown-linebreak-ext=md]
-        exclude: '^test/test_helper/bats-'
+        exclude: '^(test/test_helper/bats-|CHANGELOG\.md$|flake\.lock$)'
       # Cheap safety hooks.
       - id: check-merge-conflict
       - id: check-case-conflict

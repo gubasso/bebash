@@ -54,17 +54,17 @@ below) is `bin/*`, `lib/**/*.bash`, `libexec/**/*.bash`,
 | -------------------- | -------------------- | ---------------------------------- |
 | check-yaml           | pre-commit-hooks     | `*.yaml`, `*.yml`                  |
 | check-toml           | pre-commit-hooks     | `*.toml` (`cliff.toml`, `committed.toml`) |
-| end-of-file-fixer    | pre-commit-hooks     | all                                |
-| trailing-whitespace  | pre-commit-hooks     | all (`--markdown-linebreak-ext=md`) |
+| end-of-file-fixer    | pre-commit-hooks     | all except the generated files     |
+| trailing-whitespace  | pre-commit-hooks     | all except the generated files (`--markdown-linebreak-ext=md`) |
 | housekeeping         | pre-commit-hooks     | check-merge-conflict, check-case-conflict, check-added-large-files, detect-private-key, check-executables-have-shebangs, check-shebang-scripts-are-executable |
 | no-commit-to-branch  | pre-commit-hooks     | protects `master` (CI-only, ADR-0015); `develop` stays writable |
-| editorconfig-checker | editorconfig-checker | all except `*.md` (owned by markdown tooling); final newlines owned by end-of-file-fixer; `LICENSE` exempt |
+| editorconfig-checker | editorconfig-checker | all except `*.md` (owned by markdown tooling) and the generated files (`.editorconfig-checker.json`); final newlines owned by end-of-file-fixer; `LICENSE` exempt |
 | shellcheck           | shellcheck-py (`-x`) | shell files                        |
 | shfmt                | pre-commit-shfmt     | shell files                        |
 | shellharden          | local (system)       | shell files (`--replace`, auto-quote) |
 | bashate              | openstack/bashate    | executable scripts only — `bin/bebash`, `install*.sh`, `uninstall.sh` (`-i E003,E006`; sourced libs carry no shebang, so bashate does not run over them) |
 | gitleaks             | gitleaks             | repo secret scan (pre-commit stage) |
-| typos                | crate-ci/typos       | all (report-only; allowlist in `_typos.toml`) |
+| typos                | crate-ci/typos       | all except the generated files (report-only; allowlist and exclusions in `_typos.toml`) |
 | committed            | crate-ci/committed   | commit-msg — Conventional Commits (ADR-0013); config `committed.toml` |
 | markdown lint/format | markdownlint-cli2    | `docs/**/*.md` (fenced blocks need a language); built on the node of the devshell |
 | test-unit            | local (bats)         | pre-commit stage                   |
@@ -74,6 +74,17 @@ below) is `bin/*`, `lib/**/*.bash`, `libexec/**/*.bash`,
 Vendored bats helper libraries (`test/test_helper/bats-*`, pinned upstream) are
 excluded from the housekeeping, editorconfig-checker, shellcheck, shellharden,
 and bashate hooks — they carry upstream style and findings bebash does not own.
+
+A generated file follows its generator. git-cliff writes `CHANGELOG.md` from
+`cliff.toml`, and nix writes `flake.lock`. Both keep their generator's form:
+`just release` commits the changelog exactly as git-cliff writes it, and no hook
+rewrites or judges either file. end-of-file-fixer and trailing-whitespace
+exclude them in their `exclude:`, because those hooks have no configuration of
+their own. typos excludes them in `_typos.toml`, and editorconfig-checker in
+`.editorconfig-checker.json`, so a direct run of either tool agrees with the
+hook. The hooks that only read a file, such as the conflict and secret checks,
+still read them. `cliff.toml` stays the project's own template: git-cliff
+expects one, and no check depends on it.
 `typos` runs report-only: it never rewrites deliberate identifiers (`__ui_*` /
 `__log_*` namespaces, `err.kind` strings); fix real typos by hand and allowlist
 false positives in `_typos.toml`. `committed` is the local enforcement of the
