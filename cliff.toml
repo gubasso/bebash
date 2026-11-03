@@ -52,3 +52,8 @@ commit_parsers = [
   { body = ".*security", group = "Security" },
   { message = ".*", group = "Changed" },
 ]
+
+[bump]
+# With no v* tag yet, `git-cliff --bump` takes this version, which matches
+# tag_pattern, so the release flow can cut the first release.
+initial_tag = "v0.1.0"

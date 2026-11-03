@@ -62,5 +62,6 @@ release, never by moving a tag.
 ## First release
 
 The first release is cut the same way: `just release` from `develop`.
-`git-cliff --bump` computes `v0.1.0` from the accumulated `feat:`/`fix:` commits
-against the `0.0.0` baseline; there is no manifest or bot to bootstrap.
+With no `v*` tag yet, `git-cliff --bump` takes `v0.1.0` from
+`[bump] initial_tag` in `cliff.toml`, and the release creates `CHANGELOG.md`.
+There is no manifest or bot to bootstrap.
