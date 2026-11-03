@@ -51,10 +51,15 @@ dist:
 # the bare VERSION, commits, and cuts a SIGNED annotated v* tag. The final
 # `git push --follow-tags` is left to you (confirm before CI publishes).
 # The committed VERSION is the authoring source of truth; the tag mirrors it.
+# The recipe stops at the first failed step, so a failed commit cuts no tag.
+# It stages CHANGELOG.md by name because the first release creates it.
 release:
+	#!/usr/bin/env bash
+	set -euo pipefail
 	nix develop --command git-cliff --bump -o CHANGELOG.md
 	nix develop --command sh -c 'printf "%s\n" "$(git-cliff --bumped-version)" | sed "s/^v//" > VERSION'
-	@new="v$(cat VERSION)"; \
-		git commit -am "chore(release): $new"; \
-		git tag -s "$new" -m "$new"; \
-		echo "Tagged $new. Now run: git push --follow-tags"
+	new="v$(cat VERSION)"
+	git add CHANGELOG.md VERSION
+	git commit -m "chore(release): $new"
+	git tag -s "$new" -m "$new"
+	echo "Tagged $new. Now run: git push --follow-tags"
