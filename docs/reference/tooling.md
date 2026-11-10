@@ -152,18 +152,21 @@ trim_trailing_whitespace = false
 
 ## Nix dev shell
 
-A `flake.nix` pins the toolchain (bash, shellcheck, shfmt, shellharden, just,
-pre-commit, bats, jq, yq, git, scdoc/mandoc, markdown tooling, node, git-cliff)
-so `nix develop --command just lint` is reproducible.
+A `flake.nix` pins the devshell (bash, shellharden, just, pre-commit, bats, jq,
+yq, scdoc/mandoc, node, git-cliff) so `nix develop --command just lint` is
+reproducible.
 
-Three owners supply the tools of a hook. The devshell holds every tool that a
-recipe or a `language: system` hook calls: `shellharden` and `bats`, for
-example. pre-commit builds the environment of a hook in a language such as
-`python` or `golang`. When pre-commit cannot set up that environment from a
-clean environment, the devshell supplies the missing dependency: the
-`markdownlint-cli2` hook sets `language_version: system` and builds on the
-`node` of the devshell, because pre-commit cannot download a node. The host
-supplies only `nix`, `direnv`, `git`, `bash`, and the base tools.
+Each tool has one owner, the most specific file that declares that kind of tool
+natively. bebash has no package manifest, because Bash has none.
+`.pre-commit-config.yaml` pins each hook tool for which pre-commit builds an
+environment: shellcheck, shfmt, bashate, editorconfig-checker, gitleaks, typos,
+committed, and markdownlint-cli2. The devshell holds bash, the language of the
+project, the task runner and pre-commit, each tool that no hook can build, such
+as `shellharden` and `bats`, and the `node` on which pre-commit builds the
+`markdownlint-cli2` hook (`default_language_version` sets `node: system`). The
+host supplies `nix`, `direnv`, `git`, the base tools, and the tools that carry
+credentials, such as `gh`. A hook that keeps `language: system` carries an
+`# owner:` comment with its owner, class, and reason.
 
 ## Markdown rule
 
