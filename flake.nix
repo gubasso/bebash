@@ -78,11 +78,12 @@
 
         devShells.default = pkgs.mkShell {
           packages = [
-            # Bash runtime + shell lint/format
+            # Bash runtime, the language of the project
             pkgs.bash
-            pkgs.shellcheck
-            pkgs.shfmt
-            pkgs.shellharden   # language: system pre-commit hook
+            # The shellharden hook keeps language: system: shellharden
+            # publishes no pre-commit hook. pre-commit builds shellcheck and
+            # shfmt from their upstream hooks.
+            pkgs.shellharden
 
             # Task runner + per-project git hooks
             pkgs.just
@@ -91,15 +92,12 @@
             pkgs.bats
             pkgs.jq
             pkgs.yq-go
-            pkgs.git
             # Man-page / docs generation
             pkgs.scdoc
             pkgs.mandoc
-            # Markdown lint/format
-            pkgs.markdownlint-cli2
-            # The node of the `markdownlint-cli2` hook. pre-commit cannot
-            # download a node from a clean environment, so by the operator's
-            # rule the devshell supplies it (`language_version: system`).
+            # The node of the `markdownlint-cli2` hook, which pre-commit
+            # builds on it through `default_language_version` in
+            # .pre-commit-config.yaml.
             pkgs.nodejs
             # Changelog generation
             pkgs.git-cliff
