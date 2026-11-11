@@ -11,8 +11,7 @@ language-agnostic and preserves a human merge gate.
 ## Considered Options
 
 - `semantic-release` — push-model, no release-PR gate, Node plugin sprawl.
-- `cocogitto` — good, but its binary is literally `cog`, clashing with the
-  sibling `cog` project.
+- `cocogitto` — good.
 - `release-please` (release-PR gate, `simple` type) + `git-cliff` (changelog
   templating).
 
@@ -25,8 +24,7 @@ creates the tag + GitHub Release. git-cliff owns the changelog format.
 ## Consequences
 
 - Good: satisfies the release-PR invariant; GitHub-native, zero infra; stops at
-  tag/Release (correct for a registry-less Bash project); avoids the `cog` name
-  clash.
+  tag/Release (correct for a registry-less Bash project).
 - Good: `git-cliff` gives full control of changelog grouping/links via
   `cliff.toml`.
 - Bad: two tools instead of one.
