@@ -26,8 +26,8 @@ its own design; this records provenance and where to look for deeper patterns.
 oh-my-bash and bash-it are eager/plugin-list frameworks without first-call
 autoloading; adopting either would trade bebash's sharp startup for their weight.
 bebash instead composes the *specific* good ideas above — oh-my-bash's `custom/`
-overlay + bash-completion's filename-lazy-loading + a cog-style XDG installer +
-fish-style function autoload — into a leaner, more focused whole.
+overlay + bash-completion's filename-lazy-loading + fish-style function
+autoload — into a leaner, more focused whole.
 
 ## Standards grounding
 

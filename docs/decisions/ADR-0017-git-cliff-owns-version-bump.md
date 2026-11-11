@@ -19,8 +19,7 @@ deterministically bumps the *committed* version file.
   `VERSION`; GitHub/Node-coupled; second committed copy to reconcile.
 - git-cliff alone — `--bump` writes `VERSION` + `CHANGELOG.md`; the maintainer signs
   the tag.
-- cocogitto — its binary is literally `cog`, clashing with the sibling `cog`
-  project (still disqualifying).
+- cocogitto.
 
 ## Decision Outcome
 

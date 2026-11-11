@@ -4,14 +4,13 @@
 
 Users install by cloning and running one command. We need an install mechanism
 that is idempotent, XDG-aware, `PREFIX`-overridable, non-destructive to user
-content, and uninstallable. We also want consistency with the sibling `cog`
-project's toolchain so maintenance habits transfer.
+content, and uninstallable.
 
 ## Considered Options
 
 - GNU Make with the install-standards `PREFIX`/`DESTDIR` targets.
 - A hand-rolled `curl | bash` bootstrap.
-- `just install` delegating to a `install.sh` shell script (cog's pattern).
+- `just install` delegating to an `install.sh` shell script.
 
 ## Decision Outcome
 
@@ -21,8 +20,8 @@ owns the real mechanics (copy payload, symlink, write manifest).
 
 ## Consequences
 
-- Good: matches `cog`, so recipes and muscle memory transfer; `just` gives a
-  discoverable task list; the heavy logic stays in a testable shell script.
+- Good: `just` gives a discoverable task list; the heavy logic stays in a
+  testable shell script.
 - Good: manifest-based uninstall and idempotent re-install
   (see [reference/installer-and-manifest.md](../reference/installer-and-manifest.md)).
 - Bad: adds `just` as a build-time dependency; diverges from the pure-Make

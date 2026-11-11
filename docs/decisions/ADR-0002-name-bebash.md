@@ -12,8 +12,6 @@ prefixes, so changing it later is costly.
 
 - `bax`, `coil`, `crank` — short, punchy, low-collision, but opaque about what
   the project is.
-- `gear` / `cog`-family — mechanical kinship with the sibling `cog` project, but
-  `cog` as a binary already exists (cocogitto).
 - `bebash` — self-describing ("be bash" / a Bash base), memorable, searchable.
 
 ## Decision Outcome

@@ -136,4 +136,4 @@ Reads the manifest, validates each path against the whitelist, `rm -f`s it, prun
 now-empty bebash dirs, then strips the `.bashrc` marker block. The overlay
 (`~/.config/bebash/`) is left intact. It must run with the same `PREFIX`/`XDG_*`
 as install — if a manifest path falls outside the expected roots it refuses to
-proceed (rather than orphan files), matching the sibling installer's safety gate.
+proceed (rather than orphan files).

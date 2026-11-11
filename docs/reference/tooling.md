@@ -90,8 +90,6 @@ expects one, and no check depends on it.
 false positives in `_typos.toml`. `committed` is the local enforcement of the
 Conventional Commits contract the release flow (ADR-0013/0017) already assumes.
 
-(No skill/agent-linting hooks — those belong to a different project, not bebash.)
-
 ## Hook stages and CI
 
 Two rules bind the hooks. A push that passed the local hooks passes CI, so the
