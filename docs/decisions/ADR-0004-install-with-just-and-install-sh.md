@@ -10,7 +10,7 @@ content, and uninstallable.
 
 - GNU Make with the install-standards `PREFIX`/`DESTDIR` targets.
 - A hand-rolled `curl | bash` bootstrap.
-- `just install` delegating to a `install.sh` shell script.
+- `just install` delegating to an `install.sh` shell script.
 
 ## Decision Outcome
 
