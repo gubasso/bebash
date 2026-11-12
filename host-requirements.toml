@@ -1,0 +1,13 @@
+# The host tools of bebash's dev environment. The flake, the hooks, and the
+# recipes own every other tool. The justfile checks these with just's
+# require(), so a malformed entry here is not caught at commit: no exobrain
+# host-check hook runs in this repository.
+schema = 1
+
+[tools.git]
+
+[tools.nix]
+
+# prek owns its own floor: minimum_prek_version in .pre-commit-config.yaml.
+[tools.prek]
+version = "*"

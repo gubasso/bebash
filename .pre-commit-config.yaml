@@ -17,6 +17,11 @@
 #     bats-support/assert/file helpers vendored in test/test_helper/
 #     (see docs/reference/testing.md).
 
+# The host supplies the hook runner prek, and this is the oldest prek the
+# configuration accepts
+# (https://prek.j178.dev/reference/configuration/#minimum_prek_version).
+minimum_prek_version: "0.5.7"
+
 default_install_hook_types: [pre-commit, commit-msg, pre-push]
 
 # The pre-commit and pre-push stages together run every check of CI, and the
@@ -26,10 +31,10 @@ default_install_hook_types: [pre-commit, commit-msg, pre-push]
 # See docs/reference/tooling.md ("Hook stages and CI").
 default_stages: [pre-commit]
 
-# The markdownlint-cli2 node hook builds on the nodejs of the devshell. With an
-# empty cache, pre-commit can pick the node version `default`, and nodeenv then
-# fails on a prerelease entry of the node index: ValueError: invalid literal for
-# int() with base 10: '0-alpha' (2026-11-10).
+# The markdownlint-cli2 node hook builds on the nodejs of the devshell. With
+# `system`, prek takes a node from outside its own store and downloads none
+# (https://prek.j178.dev/reference/language-support/, prek 0.5.7,
+# 2026-11-11).
 default_language_version:
   node: system
 
@@ -168,7 +173,7 @@ repos:
       - id: typos
         # The upstream hook passes --write-changes and --force-exclude. These
         # args replace both and keep --force-exclude, so the extend-exclude of
-        # _typos.toml still applies to the files that pre-commit passes.
+        # _typos.toml still applies to the files that the hook runner passes.
         args: [--force-exclude]
         stages: [pre-commit]
 
@@ -187,7 +192,7 @@ repos:
   # to the pre-push lane. See docs/reference/testing.md.
   - repo: local
     hooks:
-      # owner: devshell (no-hook-language) bats has no hook in a language that pre-commit builds.
+      # owner: devshell (no-hook-language) bats has no hook in a language that the hook runner builds.
       - id: test-unit
         name: bats unit tests
         language: system
@@ -196,7 +201,7 @@ repos:
         always_run: true
         stages: [pre-commit]
 
-      # owner: devshell (no-hook-language) bats has no hook in a language that pre-commit builds.
+      # owner: devshell (no-hook-language) bats has no hook in a language that the hook runner builds.
       - id: test-integration
         name: bats integration tests
         language: system
@@ -209,7 +214,7 @@ repos:
       # `bats-bash-*` package of flake.nix holds that bash and a bats whose
       # shebangs point at it. The first push builds them, and the store keeps
       # them.
-      # owner: devshell (no-hook-language) the bash builds and bats of flake.nix have no hook in a language that pre-commit builds.
+      # owner: devshell (no-hook-language) the bash builds and bats of flake.nix have no hook in a language that the hook runner builds.
       - id: test-bash-versions
         name: bats suite under bash 4.4, 5.0, and 5.2
         language: system

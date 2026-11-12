@@ -92,13 +92,12 @@
             # Bash runtime, the language of the project
             pkgs.bash
             # The shellharden hook keeps language: system: shellharden
-            # publishes no pre-commit hook. pre-commit builds shellcheck and
+            # publishes no pre-commit hook. The hook runner builds shellcheck and
             # shfmt from their upstream hooks.
             pkgs.shellharden
 
-            # Task runner + per-project git hooks
+            # Task runner. The host supplies the hook runner prek.
             pkgs.just
-            pkgs.pre-commit
             # Test harness + data plumbing
             pkgs.bats
             pkgs.jq
@@ -106,7 +105,7 @@
             # Man-page / docs generation
             pkgs.scdoc
             pkgs.mandoc
-            # The node of the `markdownlint-cli2` hook, which pre-commit
+            # The node of the `markdownlint-cli2` hook, which the hook runner
             # builds on it through `default_language_version` in
             # .pre-commit-config.yaml.
             pkgs.nodejs
