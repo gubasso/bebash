@@ -33,8 +33,16 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
       - uses: DeterminateSystems/magic-nix-cache-action@v2
+      # The hook runner is a host tool, so the job installs it outside the
+      # devshell, at the version the hosts run, and `nix develop` keeps it
+      # on PATH. The action is pinned by commit SHA (https://prek.j178.dev/ci/).
+      - name: Install prek
+        uses: j178/prek-action@44924fe9ef4a6f88253c4b6b1bf11c689d3ce53d # v3.1.0
+        with:
+          install-only: true
+          prek-version: 0.5.7
       - name: Pre-commit stage
-        run: nix develop --command pre-commit run --all-files
+        run: nix develop --command prek run --all-files
 
   test:
     runs-on: ubuntu-latest
@@ -47,5 +55,10 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
       - uses: DeterminateSystems/magic-nix-cache-action@v2
+      - name: Install prek
+        uses: j178/prek-action@44924fe9ef4a6f88253c4b6b1bf11c689d3ce53d # v3.1.0
+        with:
+          install-only: true
+          prek-version: 0.5.7
       - name: Pre-push stage
-        run: nix develop --command pre-commit run --all-files --hook-stage pre-push
+        run: nix develop --command prek run --all-files --hook-stage pre-push

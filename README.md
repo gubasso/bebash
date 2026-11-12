@@ -55,6 +55,10 @@ Everything lives in [`docs/`](docs/README.md), organized by
 
 Coding agents: start at [`docs/AGENTS.md`](docs/AGENTS.md).
 
+## Develop
+
+The host supplies the tools that [`host-requirements.toml`](host-requirements.toml) lists: `git`, `nix`, and the hook runner `prek`. Each `just` recipe checks the ones it runs and halts where one is missing. Install the missing tool on the host, then run the recipe again. [`docs/reference/tooling.md`](docs/reference/tooling.md) owns the rest of the development setup.
+
 ## License
 
 See [LICENSE](LICENSE).

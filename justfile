@@ -1,5 +1,5 @@
 # Justfile — bebash task runner.
-# Recipes are thin: linters and tests run through pre-commit (never invoked
+# Recipes are thin: linters and tests run through the hook runner prek (never invoked
 # directly), and dev tooling runs inside the pinned Nix devShell (flake.nix).
 # Indentation is TAB (see .editorconfig [justfile]).
 
@@ -13,6 +13,19 @@ version := `{ cat VERSION 2>/dev/null || git describe --tags --dirty --always 2>
 default:
 	@just --list
 
+# Host tools. host-requirements.toml declares them. Each recipe checks the
+# ones it runs through a dependency below, with just's require(), which halts
+# when the tool is not on PATH. There is no global check, because `install` and
+# `uninstall` serve users who have neither nix nor prek.
+_host-dev:
+	@: {{ require("nix") }} {{ require("prek") }}
+
+_host-nix:
+	@: {{ require("nix") }}
+
+_host-git:
+	@: {{ require("git") }}
+
 # Install bebash for the current user (or system paths under root).
 install:
 	./install.sh
@@ -23,16 +36,16 @@ uninstall:
 
 # Lint: the pre-commit stage, the same command as the CI job `lint`. It runs
 # every lint hook and the bats unit tests.
-lint:
-	nix develop --command pre-commit run --all-files
+lint: _host-dev
+	nix develop --command prek run --all-files
 
 # Test: the pre-push stage, the same command as the CI job `test`. It runs the
 # bats integration tests and the whole suite under bash 4.4, 5.0, and 5.2.
-test:
-	nix develop --command pre-commit run --all-files --hook-stage pre-push
+test: _host-dev
+	nix develop --command prek run --all-files --hook-stage pre-push
 
 # Build the man page from its scdoc source.
-man:
+man: _host-nix
 	nix develop --command sh -c 'scdoc < man/bebash.1.scd > man/bebash.1'
 
 # Bash has no package registry — the signed tag + GitHub Release is the release.
@@ -40,7 +53,7 @@ man:
 # `git archive` pins every entry's mtime to the commit and emits tree-sorted
 # entries; `gzip -n` drops the gzip timestamp, so the tarball is reproducible.
 # Distribution: reproducible tarball + sha256sum for the GitHub Release.
-dist:
+dist: _host-git
 	mkdir -p dist
 	git archive --format=tar --prefix=bebash-{{version}}/ HEAD \
 		| gzip -n > dist/bebash-{{version}}.tar.gz
@@ -53,7 +66,7 @@ dist:
 # The committed VERSION is the authoring source of truth; the tag mirrors it.
 # The recipe stops at the first failed step, so a failed commit cuts no tag.
 # It stages CHANGELOG.md by name because the first release creates it.
-release:
+release: _host-nix _host-git
 	#!/usr/bin/env bash
 	set -euo pipefail
 	nix develop --command git-cliff --bump -o CHANGELOG.md

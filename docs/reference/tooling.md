@@ -1,7 +1,7 @@
 # Reference: Tooling
 
 Lint, format, hooks, editor config, and dev environment for bebash. All checks run
-through pre-commit; never invoke linters directly.
+through the hook runner prek; never invoke linters directly.
 
 ## Strict mode
 
@@ -113,8 +113,8 @@ The native commands of the two stages, which `just lint`, `just test`, and the
 CI jobs run:
 
 ```bash
-nix develop --command pre-commit run --all-files
-nix develop --command pre-commit run --all-files --hook-stage pre-push
+nix develop --command prek run --all-files
+nix develop --command prek run --all-files --hook-stage pre-push
 ```
 
 `test-bash-versions` runs `nix build` for the packages `bats-bash-4_4`,
@@ -150,20 +150,22 @@ trim_trailing_whitespace = false
 
 ## Nix dev shell
 
-A `flake.nix` pins the devshell (bash, shellharden, just, pre-commit, bats, jq,
+A `flake.nix` pins the devshell (bash, shellharden, just, bats, jq,
 yq, scdoc/mandoc, node, git-cliff) so `nix develop --command just lint` is
 reproducible.
 
 Each tool has one owner, the most specific file that declares that kind of tool
 natively. bebash has no package manifest, because Bash has none.
-`.pre-commit-config.yaml` pins each hook tool for which pre-commit builds an
+`.pre-commit-config.yaml` pins each hook tool for which the hook runner builds an
 environment: shellcheck, shfmt, bashate, editorconfig-checker, gitleaks, typos,
 committed, and markdownlint-cli2. The devshell holds bash, the language of the
-project, the task runner and pre-commit, each tool that no hook can build, such
-as `shellharden` and `bats`, and the `node` on which pre-commit builds the
+project, the task runner, each tool that no hook can build, such
+as `shellharden` and `bats`, and the `node` on which the hook runner builds the
 `markdownlint-cli2` hook (`default_language_version` sets `node: system`). The
-host supplies `nix`, `direnv`, `git`, the base tools, and the tools that carry
-credentials, such as `gh`. A hook that keeps `language: system` carries an
+host supplies `nix`, `direnv`, `git`, the hook runner `prek`, the base tools, and
+the tools that carry credentials, such as `gh`. `host-requirements.toml` declares
+the host tools that the recipes run, and each recipe checks them with just's
+`require()`. A hook that keeps `language: system` carries an
 `# owner:` comment with its owner, class, and reason.
 
 ## Markdown rule
@@ -175,4 +177,4 @@ when none applies. This shelf follows that rule.
 
 - ShellCheck directives: <https://github.com/koalaman/shellcheck/wiki/Directive>
 - shfmt: <https://github.com/mvdan/sh>
-- pre-commit: <https://pre-commit.com/>
+- prek: <https://prek.j178.dev/>
