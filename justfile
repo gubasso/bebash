@@ -14,17 +14,10 @@ default:
 	@just --list
 
 # Host tools. host-requirements.toml declares them. Each recipe checks the
-# ones it runs through a dependency below, with just's require(), which halts
-# when the tool is not on PATH. There is no global check, because `install` and
-# `uninstall` serve users who have neither nix nor prek.
-_host-dev:
-	@: {{ require("nix") }} {{ require("prek") }}
-
-_host-nix:
-	@: {{ require("nix") }}
-
-_host-git:
-	@: {{ require("git") }}
+# ones it runs in its first line, with `exobrain host-check`, which names each
+# missing tool and each version that misses its requirement. There is no global
+# check, because `install` and `uninstall` serve users who have neither nix,
+# prek, nor exobrain.
 
 # Install bebash for the current user (or system paths under root).
 install:
@@ -34,18 +27,21 @@ install:
 uninstall:
 	./uninstall.sh
 
-# Lint: the pre-commit stage, the same command as the CI job `lint`. It runs
+# Lint: the pre-commit stage, the hooks of the CI job `lint`. It runs
 # every lint hook and the bats unit tests.
-lint: _host-dev
+lint:
+	exobrain host-check nix prek
 	nix develop --command prek run --all-files
 
-# Test: the pre-push stage, the same command as the CI job `test`. It runs the
+# Test: the pre-push stage, the hooks of the CI job `test`. It runs the
 # bats integration tests and the whole suite under bash 4.4, 5.0, and 5.2.
-test: _host-dev
+test:
+	exobrain host-check nix prek
 	nix develop --command prek run --all-files --hook-stage pre-push
 
 # Build the man page from its scdoc source.
-man: _host-nix
+man:
+	exobrain host-check nix
 	nix develop --command sh -c 'scdoc < man/bebash.1.scd > man/bebash.1'
 
 # Bash has no package registry — the signed tag + GitHub Release is the release.
@@ -53,7 +49,8 @@ man: _host-nix
 # `git archive` pins every entry's mtime to the commit and emits tree-sorted
 # entries; `gzip -n` drops the gzip timestamp, so the tarball is reproducible.
 # Distribution: reproducible tarball + sha256sum for the GitHub Release.
-dist: _host-git
+dist:
+	exobrain host-check git
 	mkdir -p dist
 	git archive --format=tar --prefix=bebash-{{version}}/ HEAD \
 		| gzip -n > dist/bebash-{{version}}.tar.gz
@@ -66,9 +63,10 @@ dist: _host-git
 # The committed VERSION is the authoring source of truth; the tag mirrors it.
 # The recipe stops at the first failed step, so a failed commit cuts no tag.
 # It stages CHANGELOG.md by name because the first release creates it.
-release: _host-nix _host-git
+release:
 	#!/usr/bin/env bash
 	set -euo pipefail
+	exobrain host-check nix git
 	nix develop --command git-cliff --bump -o CHANGELOG.md
 	nix develop --command sh -c 'printf "%s\n" "$(git-cliff --bumped-version)" | sed "s/^v//" > VERSION'
 	new="v$(cat VERSION)"
