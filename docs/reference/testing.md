@@ -66,7 +66,7 @@ setup() {
 
 ## Running
 
-Via `just` (which drives pre-commit stages):
+Via `just`, which runs the hook stages through prek:
 
 ```bash
 just lint         # pre-commit stage: every lint hook + unit tests

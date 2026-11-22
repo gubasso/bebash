@@ -29,9 +29,9 @@ the runtime, CLI, installer, and tests.
   [`template.md`](docs/decisions/template.md) (MADR-minimal, ≤350 words). Accepted ADRs are never
   deleted — a changed decision gets a new superseding ADR.
 - **Lint and test through the task runner, never directly.** `just lint` runs the pre-commit
-  stage and `just test` runs the pre-push stage, both inside the pinned Nix devShell, and CI runs
-  the same two stages. Every check of CI is a hook of one of the two stages, and the pre-push stage
-  repeats none of the pre-commit stage (see
+  stage and `just test` runs the pre-push stage, both with the host hook runner prek inside the
+  pinned Nix devShell, and CI runs the same two stages. Every check of CI is a hook of one of the
+  two stages, and the pre-push stage repeats none of the pre-commit stage (see
   [`docs/reference/tooling.md`](docs/reference/tooling.md#hook-stages-and-ci)).
 - **Conventional Commits** ([ADR-0013](docs/decisions/ADR-0013-conventional-commits-and-semver.md))
   gate every commit message; the release flow derives the version and changelog from them.
