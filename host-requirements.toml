@@ -5,10 +5,10 @@
 schema = 1
 
 # The CLI of exobrain-tech: the hook hook-revisions calls `exobrain hooks
-# check`, and the recipes call `exobrain host-check`. 1.2.0 is the first
-# release that carries `hooks check`.
+# check`, the recipes call `exobrain host-check`, and `.envrc` calls
+# `exobrain outdated`. 2.0.0 is the first release that carries `outdated`.
 [tools.exobrain]
-version = ">=1.2.0"
+version = ">=2.0.0"
 
 [tools.git]
 

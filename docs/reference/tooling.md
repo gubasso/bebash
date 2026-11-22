@@ -202,7 +202,7 @@ devshell holds no hook runner and no `exobrain`, because a devshell copy comes
 first on the `PATH` and hides the host tool. `host-requirements.toml` declares
 the host tools that the recipes and hooks run, and each recipe checks its tools
 in its first line with `exobrain host-check`. `.envrc` runs two warnings of
-the `exobrain` CLI, `exobrain hooks status` and `exobrain store-guard --daily`.
+the `exobrain` CLI, `exobrain outdated` and `exobrain store-guard --daily`.
 Each exits 0 and changes nothing. A hook that keeps `language: system` carries an
 `# owner:` comment with its owner, class, and reason.
 
