@@ -1,8 +1,14 @@
 # The host tools of bebash's dev environment. The flake, the hooks, and the
-# recipes own every other tool. The justfile checks these with just's
-# require(), so a malformed entry here is not caught at commit: no exobrain
-# host-check hook runs in this repository.
+# recipes own every other tool. The justfile checks these with
+# `exobrain host-check` in the first line of each recipe that uses them, and
+# the host-requirements hook of exobrain-tech parses this file at commit.
 schema = 1
+
+# The CLI of exobrain-tech: the hook hook-revisions calls `exobrain hooks
+# check`, and the recipes call `exobrain host-check`. 1.2.0 is the first
+# release that carries `hooks check`.
+[tools.exobrain]
+version = ">=1.2.0"
 
 [tools.git]
 

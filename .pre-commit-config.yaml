@@ -39,9 +39,11 @@ default_language_version:
   node: system
 
 repos:
-  # --- Generic housekeeping (pre-commit/pre-commit-hooks) ---
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+  # --- Generic housekeeping (prek built-in hooks) ---
+  # prek runs these in its own binary: no clone, no environment, and no `rev`
+  # (https://prek.j178.dev/reference/built-in-hooks/). A config with
+  # `repo: builtin` runs under prek only.
+  - repo: builtin
     hooks:
       - id: check-yaml
         files: '\.ya?ml$'
@@ -83,12 +85,15 @@ repos:
         stages: [pre-commit]
         exclude: '^test/test_helper/bats-'
       # master is written only by CI (ADR-0015); develop stays writable.
+      # local-only: the hook guards a local commit. CI runs no commit, and a
+      # CI checkout of master would fail it with no commit to judge.
       - id: no-commit-to-branch
         args: [--branch, master]
+        groups: [local-only]
 
   # --- EditorConfig conformance (aligned with the shared .editorconfig) ---
   - repo: https://github.com/editorconfig-checker/editorconfig-checker
-    rev: v3.8.0
+    rev: v4.0.2
     hooks:
       - id: editorconfig-checker
         alias: ec
@@ -102,7 +107,7 @@ repos:
 
   # --- ShellCheck static analysis (shellcheck-py, -x) ---
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.11.0.1
+    rev: v0.11.0.1-1
     hooks:
       - id: shellcheck
         args: [-x]   # follow sourced files (source-path from .shellcheckrc)
@@ -112,7 +117,7 @@ repos:
 
   # --- shfmt formatter (pre-commit-shfmt) ---
   - repo: https://github.com/scop/pre-commit-shfmt
-    rev: v3.13.1-1
+    rev: v3.14.1-1
     hooks:
       - id: shfmt
         stages: [pre-commit]
@@ -168,7 +173,7 @@ repos:
   # (__ui_*/__log_* namespaces, err.kind strings). Fix real typos by hand;
   # allowlist false positives in _typos.toml.
   - repo: https://github.com/crate-ci/typos
-    rev: v1.48.0
+    rev: v1.52.2
     hooks:
       - id: typos
         # The upstream hook passes --write-changes and --force-exclude. These
@@ -181,7 +186,7 @@ repos:
   # Local enforcement of the commit contract the release flow assumes
   # (ADR-0013/0017). Config source of truth: committed.toml.
   - repo: https://github.com/crate-ci/committed
-    rev: v1.1.11
+    rev: v1.1.12
     hooks:
       - id: committed
         stages: [commit-msg]
@@ -239,8 +244,16 @@ repos:
         files: '(^|/)flake\.nix$|(^|/)nix/.*\.nix$'
 
   # A flake reference reads the git tree of a checkout, never a path copy of
-  # the whole folder into the Nix store. The hook is published by exobrain-tech.
+  # the whole folder into the Nix store, and a flake holds no hook runner.
+  # The hooks that exobrain-tech publishes. hook-revisions holds the `rev` of
+  # each repository that the named reference sets share to the copy that this
+  # entry's tag states; `exobrain hooks sync --to <tag>` moves them together.
+  # It calls the exobrain CLI that the host supplies (host-requirements.toml).
   - repo: https://github.com/gubasso/exobrain-tech
-    rev: v1.0.0
+    rev: v1.2.0
     hooks:
       - id: no-path-flake-reference
+      - id: no-hook-runner-in-flake
+      - id: host-requirements
+      - id: hook-revisions
+        args: [--set, common, --set, bash, --set, nix]

@@ -44,6 +44,21 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
       - uses: DeterminateSystems/magic-nix-cache-action@v2
+      # `just dist` checks its host tools with the exobrain CLI, so the job
+      # installs the release that the exobrain-tech entry of
+      # .pre-commit-config.yaml pins and verifies its attestation. yq and gh
+      # come with the runner.
+      - name: Install the exobrain CLI of the pinned exobrain-tech tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(yq '.repos[] | select(.repo | test("/exobrain-tech(\.git)?/?$")) | .rev' .pre-commit-config.yaml)
+          asset=exobrain-x86_64-unknown-linux-gnu.tar.xz
+          gh release download "$tag" --repo gubasso/exobrain-tech --pattern "$asset" --dir "$RUNNER_TEMP"
+          gh attestation verify "$RUNNER_TEMP/$asset" --repo gubasso/exobrain-tech
+          mkdir -p "$RUNNER_TEMP/exobrain"
+          tar -xJf "$RUNNER_TEMP/$asset" -C "$RUNNER_TEMP/exobrain" --strip-components=1
+          echo "$RUNNER_TEMP/exobrain" >> "$GITHUB_PATH"
       - name: Build distribution tarball
         run: nix develop --command just dist
       - name: Generate release notes

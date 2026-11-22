@@ -41,8 +41,11 @@ bebash/
 ├── install-common.sh           # sourced by install.sh / uninstall.sh (shared helpers)
 ├── uninstall.sh                # executed uninstaller (reads the manifest)
 ├── cliff.toml                  # git-cliff changelog config
-├── .shellcheckrc · .editorconfig · .pre-commit-config.yaml
+├── .shellcheckrc · .editorconfig
+├── .pre-commit-config.yaml     # prek hooks (the host supplies prek)
+├── host-requirements.toml      # host tools: exobrain, git, nix, prek
 ├── flake.nix · flake.lock      # Nix dev shell (optional)
+├── .envrc                      # direnv: the dev shell + exobrain warnings
 ├── LICENSE · README.md
 ├── VERSION                     # committed X.Y.Z; authoring source of truth
 └── .github/workflows/          # CI + tag-triggered release (git-cliff)
